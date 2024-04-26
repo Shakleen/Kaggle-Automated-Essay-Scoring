@@ -19,3 +19,6 @@ class Config:
 
     # For parallel processing in dataset creation
     NUM_WORKERS: int = 6
+
+    # Dataset version
+    DATA_VERSION: int = 1
