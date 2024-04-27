@@ -22,3 +22,8 @@ class Config:
 
     # Dataset version
     DATA_VERSION: int = 1
+
+    # Number of classes for classification models
+    NUM_CLASSES: int = 6
+
+    GRADIENT_CHECKPOINTING: bool = True
