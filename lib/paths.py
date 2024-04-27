@@ -13,3 +13,5 @@ class Paths:
 
     # Output paths
     TOKENIZER_PATH: str = f"output/tokenizer_v{Config.DATA_VERSION}"
+    MODEL_OUTPUT_PATH: str = f"output/{Config.MODEL}"
+

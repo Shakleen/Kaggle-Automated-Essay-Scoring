@@ -71,13 +71,10 @@ class CustomDataset(Dataset):
 
 
 def get_data_loaders(
-    train_df: pd.DataFrame,
+    train_folds: pd.DataFrame,
+    valid_folds: pd.DataFrame,
     tokenizer,
-    fold: int,
 ) -> Tuple[DataLoader, DataLoader]:
-    train_folds = train_df[train_df["fold"] != fold].reset_index(drop=True)
-    valid_folds = train_df[train_df["fold"] == fold].reset_index(drop=True)
-    valid_labels = valid_folds["score"].values
 
     # ======== DATASETS ==========
     train_dataset = CustomDataset(Config, train_folds, tokenizer)

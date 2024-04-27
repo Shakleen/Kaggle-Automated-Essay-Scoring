@@ -4,6 +4,7 @@ import torch
 import numpy as np
 import math
 import time
+from logging import getLogger, INFO, StreamHandler, FileHandler, Formatter
 
 
 def seed_everything(seed: int) -> None:
@@ -34,3 +35,16 @@ def timeSince(since, percent):
     es = s / (percent)
     rs = es - s
     return "%s (remain %s)" % (asMinutes(s), asMinutes(rs))
+
+
+def get_logger(filename):
+    logger = getLogger(__name__)
+    logger.setLevel(INFO)
+    handler1 = StreamHandler()
+    handler1.setFormatter(Formatter("%(message)s"))
+    handler2 = FileHandler(filename=f"{filename}.log")
+    handler2.setFormatter(Formatter("%(message)s"))
+    logger.addHandler(handler1)
+    logger.addHandler(handler2)
+
+    return logger
