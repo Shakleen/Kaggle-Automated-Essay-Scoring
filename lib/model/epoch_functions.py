@@ -3,14 +3,13 @@ import time
 from tqdm import tqdm
 import numpy as np
 
-from .average_meter import AverageMeter
+from ..utils.average_meter import AverageMeter
 from ..config import Config
 from ..data import collate
-from ..utils import timeSince
+from ..utils.utils import timeSince
 
 
 def train_epoch(
-    fold,
     train_loader,
     model,
     criterion,

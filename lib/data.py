@@ -99,3 +99,17 @@ def get_data_loaders(
     )
 
     return (train_loader, valid_loader)
+
+
+def read_data_loader_from_disk(fold: int) -> Tuple[DataLoader, DataLoader]:
+    """Reads train and valid data loader for fold `fold` from disk.
+
+    Args:
+        fold (int): Fold number.
+
+    Returns:
+        Tuple[DataLoader, DataLoader]: Train and valid data loader.
+    """
+    train_loader = torch.load(os.path.join(Paths.DATA_LOADER_PATH, f"train_{fold}.pth"))
+    valid_loader = torch.load(os.path.join(Paths.DATA_LOADER_PATH, f"valid_{fold}.pth"))
+    return (train_loader, valid_loader)
