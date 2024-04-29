@@ -1,3 +1,5 @@
+import os
+
 from .config import Config
 
 class Paths:
@@ -12,6 +14,8 @@ class Paths:
     DATA_LOADER_PATH: str = f"data/dataloader_v{Config.DATA_VERSION}"
 
     # Output paths
-    TOKENIZER_PATH: str = f"output/tokenizer_v{Config.DATA_VERSION}"
     MODEL_OUTPUT_PATH: str = f"output/{Config.MODEL}"
+    TOKENIZER_PATH: str = os.path.join(MODEL_OUTPUT_PATH, f"tokenizer_v{Config.DATA_VERSION}")
 
+    # Best Model Path
+    BEST_MODEL_PATH: str = "output/microsoft/deberta-v3-base/best_model"

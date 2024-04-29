@@ -6,8 +6,10 @@ import math
 import time
 from logging import getLogger, INFO, StreamHandler, FileHandler, Formatter
 
+from ..config import Config
 
-def seed_everything(seed: int) -> None:
+
+def seed_everything(seed: int = Config.RANDOM_SEED) -> None:
     """Seed everything to ensure reproducibility
 
     Sources:
@@ -40,7 +42,7 @@ def timeSince(since, percent):
 def get_logger(filename):
     logger = getLogger(__name__)
     logger.setLevel(INFO)
-    
+
     handler1 = StreamHandler()
     handler1.setFormatter(Formatter("%(message)s"))
 

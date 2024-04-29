@@ -44,7 +44,7 @@ class CustomModel(nn.Module):
         if pretrained:
             self.model = AutoModel.from_pretrained(cfg.MODEL, config=self.config)
         else:
-            self.model = AutoModel(self.config)
+            self.model = AutoModel.from_config(self.config)
 
         if self.cfg.GRADIENT_CHECKPOINTING:
             self.model.gradient_checkpointing_enable()

@@ -1,9 +1,11 @@
+import os
 import torch
 from torch.utils.data import DataLoader, Dataset
 from typing import Tuple
 import pandas as pd
 
 from .config import Config
+from .paths import Paths
 
 
 def prepare_input(cfg, text, tokenizer):
@@ -52,22 +54,34 @@ def collate(inputs):
 
 
 class CustomDataset(Dataset):
-    def __init__(self, cfg, df, tokenizer):
+    """
+    Source:
+    https://www.kaggle.com/code/alejopaullier/aes-2-multi-class-classification-train?scriptVersionId=170290107&cellId=18
+    """
+
+    def __init__(self, cfg, df, tokenizer, is_train: bool = True):
         self.cfg = cfg
         self.texts = df["full_text"].values
-        self.labels = df["score"].values
-        self.tokenizer = tokenizer
         self.essay_ids = df["essay_id"].values
+        self.tokenizer = tokenizer
+        self.is_train = is_train
+
+        if self.is_train:
+            self.labels = df["score"].values
 
     def __len__(self):
         return len(self.texts)
 
     def __getitem__(self, item):
-        return {
+        output = {
             "inputs": prepare_input(self.cfg, self.texts[item], self.tokenizer),
-            "labels": torch.tensor(self.labels[item], dtype=torch.long),
             "essay_ids": self.essay_ids[item],
         }
+
+        if self.is_train:
+            output["labels"] = torch.tensor(self.labels[item], dtype=torch.long)
+
+        return output
 
 
 def get_data_loaders(
