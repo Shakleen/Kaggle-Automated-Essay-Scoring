@@ -1,8 +1,9 @@
 import torch
 from torch import nn
-from transformers import AutoModel, AutoConfig
+from transformers import AutoModel, AutoConfig, AutoTokenizer
 
 from ..config import Config
+from ..paths import Paths
 
 
 class MeanPooling(nn.Module):
@@ -45,6 +46,10 @@ class CustomModel(nn.Module):
             self.model = AutoModel.from_pretrained(cfg.MODEL, config=self.config)
         else:
             self.model = AutoModel.from_config(self.config)
+
+        # Resize embeddings in case special tokens were added
+        tokenizer = AutoTokenizer.from_pretrained(Paths.TOKENIZER_PATH)
+        self.model.resize_token_embeddings(len(tokenizer))
 
         if self.cfg.GRADIENT_CHECKPOINTING:
             self.model.gradient_checkpointing_enable()
