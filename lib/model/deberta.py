@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from transformers import AutoModel, AutoConfig, AutoTokenizer
 
-from ..config import Config
+from ..config import config
 from ..paths import Paths
 
 
@@ -44,20 +44,19 @@ class CustomModel(nn.Module):
 
         if pretrained:
             self.model = AutoModel.from_pretrained(cfg.MODEL, config=self.config)
-            
+
             # Resize embeddings in case special tokens were added
             tokenizer = AutoTokenizer.from_pretrained(Paths.TOKENIZER_PATH)
             self.model.resize_token_embeddings(len(tokenizer))
         else:
             self.model = AutoModel.from_config(self.config)
 
-
         if self.cfg.GRADIENT_CHECKPOINTING:
             self.model.gradient_checkpointing_enable()
 
         # Add MeanPooling and Linear head at the end to transform the Model into a RegressionModel
         self.pool = MeanPooling()
-        self.fc = nn.Linear(self.config.hidden_size, Config.NUM_CLASSES)
+        self.fc = nn.Linear(self.config.hidden_size, config.num_classes)
         self._init_weights(self.fc)
 
     def _init_weights(self, module):

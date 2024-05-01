@@ -4,7 +4,7 @@ from tqdm import tqdm
 import numpy as np
 
 from ..utils.average_meter import AverageMeter
-from ..config import Config
+from ..config import config
 from ..data import collate
 from ..utils.utils import timeSince
 
@@ -25,7 +25,7 @@ def train_epoch(
     """
     model.train()  # set model in train mode
     scaler = torch.cuda.amp.GradScaler(
-        enabled=Config.APEX
+        enabled=config.apex
     )  # Automatic Mixed Precision tries to match each op to its appropriate datatype.
     losses = AverageMeter()  # initiate AverageMeter to track the loss.
     start = time.time()  # track the execution time.
@@ -43,31 +43,31 @@ def train_epoch(
             labels = labels.to(device)  # send labels to `device`
 
             batch_size = labels.size(0)
-            with torch.cuda.amp.autocast(enabled=Config.APEX):
+            with torch.cuda.amp.autocast(enabled=config.apex):
                 y_preds = model(inputs)  # forward propagation pass
                 loss = criterion(y_preds, labels)  # get loss
 
-            if Config.GRADIENT_ACCUMULATION_STEPS > 1:
-                loss = loss / Config.GRADIENT_ACCUMULATION_STEPS
+            if config.gradient_accumulation_steps > 1:
+                loss = loss / config.gradient_accumulation_steps
 
             losses.update(loss.item(), batch_size)  # update loss function tracking
             scaler.scale(loss).backward()  # backward propagation pass
             grad_norm = torch.nn.utils.clip_grad_norm_(
                 model.parameters(),
-                Config.MAX_GRAD_NORM,
+                config.max_grad_norm,
             )
 
-            if (step + 1) % Config.GRADIENT_ACCUMULATION_STEPS == 0:
+            if (step + 1) % config.gradient_accumulation_steps == 0:
                 scaler.step(optimizer)  # update optimizer parameters
                 scaler.update()
                 optimizer.zero_grad()  # zero out the gradients
                 global_step += 1
 
-                if Config.BATCH_SCHEDULER:
+                if config.batch_scheduler:
                     scheduler.step()  # update learning rate
 
             # ========== LOG INFO ==========
-            if step % Config.PRINT_FREQ == 0 or step == (len(train_loader) - 1):
+            if step % config.print_freq == 0 or step == (len(train_loader) - 1):
                 print(
                     "Epoch: [{0}][{1}/{2}] "
                     "Elapsed {remain:s} "
@@ -110,14 +110,14 @@ def valid_epoch(valid_loader, model, criterion, device):
                 y_preds = model(inputs)  # forward propagation pass
                 loss = criterion(y_preds, labels)  # get loss
 
-            if Config.GRADIENT_ACCUMULATION_STEPS > 1:
-                loss = loss / Config.GRADIENT_ACCUMULATION_STEPS
+            if config.gradient_accumulation_steps > 1:
+                loss = loss / config.gradient_accumulation_steps
 
             losses.update(loss.item(), batch_size)  # update loss function tracking
             preds.append(y_preds.to("cpu").numpy())  # save predictions
 
             # ========== LOG INFO ==========
-            if step % Config.PRINT_FREQ == 0 or step == (len(valid_loader) - 1):
+            if step % config.print_freq == 0 or step == (len(valid_loader) - 1):
                 print(
                     "EVAL: [{0}/{1}] "
                     "Elapsed {remain:s} "

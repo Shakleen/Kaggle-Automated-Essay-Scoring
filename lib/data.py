@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader, Dataset
 from typing import Tuple
 import pandas as pd
 
-from .config import Config
+from .config import config
 from .paths import Paths
 
 
@@ -25,7 +25,7 @@ def prepare_input(cfg, text, tokenizer):
         text,
         return_tensors=None,
         add_special_tokens=True,
-        max_length=Config.MAX_LENGTH,
+        max_length=config.max_length,
         padding="max_length",  # TODO: check padding to max sequence in batch
         truncation=True,
     )
@@ -91,23 +91,23 @@ def get_data_loaders(
 ) -> Tuple[DataLoader, DataLoader]:
 
     # ======== DATASETS ==========
-    train_dataset = CustomDataset(Config, train_folds, tokenizer)
-    valid_dataset = CustomDataset(Config, valid_folds, tokenizer)
+    train_dataset = CustomDataset(config, train_folds, tokenizer)
+    valid_dataset = CustomDataset(config, valid_folds, tokenizer)
 
     # ======== DATALOADERS ==========
     train_loader = DataLoader(
         train_dataset,
-        batch_size=Config.BATCH_SIZE_TRAIN,  # TODO: split into train and valid
+        batch_size=config.batch_size_train,  # TODO: split into train and valid
         shuffle=True,
-        num_workers=Config.NUM_WORKERS,
+        num_workers=config.num_workers,
         pin_memory=True,
         drop_last=True,
     )
     valid_loader = DataLoader(
         valid_dataset,
-        batch_size=Config.BATCH_SIZE_VALID,
+        batch_size=config.batch_size_valid,
         shuffle=False,
-        num_workers=Config.NUM_WORKERS,
+        num_workers=config.num_workers,
         pin_memory=True,
         drop_last=False,
     )
