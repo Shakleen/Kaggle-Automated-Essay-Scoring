@@ -31,7 +31,7 @@ class CustomModel(nn.Module):
         # Load config by inferencing it from the model name.
         if config_path is None:
             self.config = AutoConfig.from_pretrained(
-                cfg.MODEL, output_hidden_states=True
+                cfg.model, output_hidden_states=True
             )
             self.config.hidden_dropout = 0.0
             self.config.hidden_dropout_prob = 0.0
@@ -43,7 +43,7 @@ class CustomModel(nn.Module):
             self.config = torch.load(config_path)
 
         if pretrained:
-            self.model = AutoModel.from_pretrained(cfg.MODEL, config=self.config)
+            self.model = AutoModel.from_pretrained(cfg.model, config=self.config)
 
             # Resize embeddings in case special tokens were added
             tokenizer = AutoTokenizer.from_pretrained(Paths.TOKENIZER_PATH)
@@ -51,7 +51,7 @@ class CustomModel(nn.Module):
         else:
             self.model = AutoModel.from_config(self.config)
 
-        if self.cfg.GRADIENT_CHECKPOINTING:
+        if self.cfg.gradient_checkpointing:
             self.model.gradient_checkpointing_enable()
 
         # Add MeanPooling and Linear head at the end to transform the Model into a RegressionModel
