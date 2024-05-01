@@ -4,8 +4,8 @@ from typing import Tuple, List
 class Config:
     APEX: bool = True  # Automatic Precision Enabled
     BATCH_SCHEDULER: bool = True
-    BATCH_SIZE_TRAIN: int = 16
-    BATCH_SIZE_VALID: int = 8
+    BATCH_SIZE_TRAIN: int = 8
+    BATCH_SIZE_VALID: int = 4
     BETAS: Tuple[float] = (0.9, 0.999)
     DATA_VERSION: int = 1  # Dataset version
     DEBUG: bool = False
@@ -16,7 +16,7 @@ class Config:
     GRADIENT_ACCUMULATION_STEPS: int = 1
     GRADIENT_CHECKPOINTING: bool = True
     MAX_GRAD_NORM: int = 1000
-    MAX_LENGTH: int = 512  # Max number of tokens per sequence
+    MAX_LENGTH: int = 1024  # Max number of tokens per sequence
     MIN_LR: float = 1e-6
     MODEL: str = "microsoft/deberta-v3-base"  # Model Name
     N_FOLDS: int = 5  # Number of folds for Cross-validation
