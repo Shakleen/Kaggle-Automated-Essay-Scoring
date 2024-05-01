@@ -13,6 +13,6 @@ The competition dataset comprises about 24000 student-written argumentative essa
         * 512 max length
             * Baseline [CV: 0.77, PL: 0.743]
             * Added extra token to tokenizer ("\n") [CV: 0.7768, PL: 0.781]
+            * Added extra tokens to tokenizer ("\n", "  ") [CV: 0.7875, PL: 0.784]
         * 1024 max length
-            * Added extra token to tokenizer ("\n") [CV: 0.8009, PL: ???]
-            * Added extra tokens to tokenizer ("\n", "  ") [CV: 0.8009, PL: ???]
+            * Added extra token to tokenizer ("\n") [CV: 0.8009, PL: 0.725]
