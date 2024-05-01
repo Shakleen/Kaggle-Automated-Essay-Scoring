@@ -6,10 +6,10 @@ import math
 import time
 from logging import getLogger, INFO, StreamHandler, FileHandler, Formatter
 
-from ..config import Config
+from ..config import config
 
 
-def seed_everything(seed: int = Config.RANDOM_SEED) -> None:
+def seed_everything(seed: int = config.random_seed) -> None:
     """Seed everything to ensure reproducibility
 
     Sources:
