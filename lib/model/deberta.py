@@ -44,12 +44,12 @@ class CustomModel(nn.Module):
 
         if pretrained:
             self.model = AutoModel.from_pretrained(cfg.model, config=self.config)
+        else:
+            self.model = AutoModel.from_config(self.config)
 
             # Resize embeddings in case special tokens were added
             tokenizer = AutoTokenizer.from_pretrained(Paths.TOKENIZER_PATH)
             self.model.resize_token_embeddings(len(tokenizer))
-        else:
-            self.model = AutoModel.from_config(self.config)
 
         if self.cfg.gradient_checkpointing:
             self.model.gradient_checkpointing_enable()
