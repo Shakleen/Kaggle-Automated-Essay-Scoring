@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader, Dataset
 from typing import Tuple
 import pandas as pd
 import re
+from tqdm import tqdm
 
 from .config import config
 from .paths import Paths
@@ -139,3 +140,72 @@ def read_data_loader_from_disk(fold: int) -> Tuple[DataLoader, DataLoader]:
     train_loader = torch.load(os.path.join(Paths.DATA_LOADER_PATH, f"train_{fold}.pth"))
     valid_loader = torch.load(os.path.join(Paths.DATA_LOADER_PATH, f"valid_{fold}.pth"))
     return (train_loader, valid_loader)
+
+
+def split_tokens(tokens):
+    """Splits `tokens` into multiple sequences that have at most
+    `config.max_length` tokens. Uses `config.stride` for sliding
+    window.
+
+    Args:
+        tokens (List): List of tokens.
+
+    Returns:
+        List[List[int]]: List of split token sequences.
+    """
+    start = 0
+    sequence_list = []
+
+    while start < len(tokens):
+        remaining_tokens = len(tokens) - start
+
+        if remaining_tokens < config.max_length and start > 0:
+            start = max(0, len(tokens) - config.max_length)
+
+        end = min(start + config.max_length, len(tokens))
+        sequence_list.append(tokens[start:end])
+
+        if remaining_tokens >= config.max_length:
+            start += config.stride
+        else:
+            break
+
+    return sequence_list
+
+
+def _construct_new_row(old_row, text):
+    new_row = {key: old_row[key] for key in old_row.keys() if key != "index"}
+    new_row["full_text"] = text
+    return new_row
+
+
+def sliding_window(df, tokenizer):
+    """Splits rows of `df` so that each row's text has at most
+    `config.max_length` number of tokens.
+
+    Args:
+        df (pd.DataFrame): Input data frame.
+        tokenizer (_type_): Tokenizer used to encode and decode text.
+
+    Returns:
+        pd.DataFrame: Newly constructed dataframe.
+    """
+    new_df = []
+
+    for _, row in tqdm(df.iterrows(), total=df.shape[0]):
+        tokens = tokenizer.encode(row["full_text"], add_special_tokens=False)
+
+        if len(tokens) <= config.max_length:
+            new_df.append(_construct_new_row(row, row["full_text"]))
+        else:
+            sequence_list = split_tokens(tokens)
+
+            for seq in sequence_list:
+                new_df.append(
+                    _construct_new_row(
+                        row,
+                        tokenizer.decode(seq, skip_special_tokens=True),
+                    )
+                )
+
+    return pd.DataFrame(new_df)
