@@ -3,9 +3,21 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from typing import Tuple
 import pandas as pd
+import re
 
 from .config import config
 from .paths import Paths
+
+
+def clean_text(text):
+    """
+    Source:
+    https://www.kaggle.com/code/mpware/aes2-what-are-the-essays-about?scriptVersionId=174449147&cellId=5
+    """
+    text = text.strip()
+    text = text.replace("\n", " ")
+    text = re.sub(r"\s+", " ", text)
+    return text
 
 
 def prepare_input(cfg, text, tokenizer):

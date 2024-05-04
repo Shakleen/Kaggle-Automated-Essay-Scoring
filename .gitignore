@@ -1,4 +1,6 @@
 **/data
 **/output
 **/venv
+**/wandb
 **/__pycache__
+**/.env

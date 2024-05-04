@@ -2,6 +2,8 @@ import torch
 import time
 from tqdm import tqdm
 import numpy as np
+import wandb
+import math
 
 from ..utils.average_meter import AverageMeter
 from ..config import config
@@ -10,6 +12,7 @@ from ..utils.utils import timeSince
 
 
 def train_epoch(
+    fold,
     train_loader,
     model,
     criterion,
@@ -28,8 +31,8 @@ def train_epoch(
         enabled=config.apex
     )  # Automatic Mixed Precision tries to match each op to its appropriate datatype.
     losses = AverageMeter()  # initiate AverageMeter to track the loss.
-    start = time.time()  # track the execution time.
     global_step = 0
+    n_steps_per_epoch = math.ceil(len(train_loader) / config.batch_size_train)
 
     # ========== ITERATE OVER TRAIN BATCHES ============
     with tqdm(train_loader, unit="train_batch", desc="Train") as tqdm_train_loader:
@@ -68,23 +71,22 @@ def train_epoch(
 
             # ========== LOG INFO ==========
             if step % config.print_freq == 0 or step == (len(train_loader) - 1):
-                print(
-                    "Epoch: [{0}][{1}/{2}] "
-                    "Elapsed {remain:s} "
-                    "Loss: {loss.avg:.4f} "
-                    "Grad: {grad_norm:.4f}  "
-                    "LR: {lr:.8f}  ".format(
-                        epoch + 1,
-                        step,
-                        len(train_loader),
-                        remain=timeSince(start, float(step + 1) / len(train_loader)),
-                        loss=losses,
-                        grad_norm=grad_norm,
-                        lr=scheduler.get_lr()[0],
-                    )
+                wandb.log(
+                    {
+                        f"train/epoch_f{fold}": calc_epoch(
+                            epoch, n_steps_per_epoch, step
+                        ),
+                        f"train/train_loss_f{fold}": losses.avg,
+                        f"train/grad_norm_f{fold}": grad_norm,
+                        f"train/learning_rate_f{fold}": scheduler.get_lr()[0],
+                    }
                 )
 
     return losses.avg
+
+
+def calc_epoch(epoch, n_steps_per_epoch, step):
+    return (step + 1 + (n_steps_per_epoch * epoch)) / n_steps_per_epoch
 
 
 def valid_epoch(valid_loader, model, criterion, device):
@@ -92,7 +94,6 @@ def valid_epoch(valid_loader, model, criterion, device):
     losses = AverageMeter()  # initiate AverageMeter for tracking the loss.
     prediction_dict = {}
     preds = []
-    start = time.time()  # track the execution time.
 
     with tqdm(valid_loader, unit="valid_batch", desc="Validation") as tqdm_valid_loader:
         for step, batch in enumerate(tqdm_valid_loader):
@@ -115,19 +116,6 @@ def valid_epoch(valid_loader, model, criterion, device):
 
             losses.update(loss.item(), batch_size)  # update loss function tracking
             preds.append(y_preds.to("cpu").numpy())  # save predictions
-
-            # ========== LOG INFO ==========
-            if step % config.print_freq == 0 or step == (len(valid_loader) - 1):
-                print(
-                    "EVAL: [{0}/{1}] "
-                    "Elapsed {remain:s} "
-                    "Loss: {loss.avg:.4f} ".format(
-                        step,
-                        len(valid_loader),
-                        loss=losses,
-                        remain=timeSince(start, float(step + 1) / len(valid_loader)),
-                    )
-                )
 
     prediction_dict["predictions"] = np.concatenate(
         preds
