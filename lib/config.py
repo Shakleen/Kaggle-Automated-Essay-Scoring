@@ -29,7 +29,7 @@ config = SimpleNamespace(
     scheduler="cosine",  # ['linear', 'cosine']
     stride=192,
     train=True,
-    train_folds=[0, 1, 2, 3, 4],
+    train_folds=[0, 1, 2, 3, 4, 5, 6, 7],
     weight_decay=0.01,
 )
 

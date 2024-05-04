@@ -35,7 +35,6 @@ def log_metrics(df, prefix):
 
         wandb.log(
             {
-                f"{prefix}/score": score + 1,
                 f"{prefix}/Accuracy": accuracy,
                 f"{prefix}/Error Rate": error_rate,
                 f"{prefix}/Precision": precision,

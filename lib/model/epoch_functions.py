@@ -73,9 +73,6 @@ def train_epoch(
             if step % config.print_freq == 0 or step == (len(train_loader) - 1):
                 wandb.log(
                     {
-                        f"train/epoch_f{fold}": calc_epoch(
-                            epoch, n_steps_per_epoch, step
-                        ),
                         f"train/train_loss_f{fold}": losses.avg,
                         f"train/grad_norm_f{fold}": grad_norm,
                         f"train/learning_rate_f{fold}": scheduler.get_lr()[0],
