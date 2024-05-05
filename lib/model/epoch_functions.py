@@ -35,7 +35,7 @@ def train_epoch(
     n_steps_per_epoch = math.ceil(len(train_loader) / config.batch_size_train)
 
     # ========== ITERATE OVER TRAIN BATCHES ============
-    with tqdm(train_loader, unit="train_batch", desc="Train") as tqdm_train_loader:
+    with tqdm(train_loader, unit="train_batch", desc=f"Training Fold {fold}") as tqdm_train_loader:
         for step, batch in enumerate(tqdm_train_loader):
             inputs = collate(batch.pop("inputs"))
             labels = batch.pop("labels")
@@ -73,6 +73,9 @@ def train_epoch(
             if step % config.print_freq == 0 or step == (len(train_loader) - 1):
                 wandb.log(
                     {
+                        f"train/epoch_f{fold}": calc_epoch(
+                            epoch, n_steps_per_epoch, step
+                        ),
                         f"train/train_loss_f{fold}": losses.avg,
                         f"train/grad_norm_f{fold}": grad_norm,
                         f"train/learning_rate_f{fold}": scheduler.get_lr()[0],
@@ -86,13 +89,13 @@ def calc_epoch(epoch, n_steps_per_epoch, step):
     return (step + 1 + (n_steps_per_epoch * epoch)) / n_steps_per_epoch
 
 
-def valid_epoch(valid_loader, model, criterion, device):
+def valid_epoch(fold, valid_loader, model, criterion, device):
     model.eval()  # set model in evaluation mode
     losses = AverageMeter()  # initiate AverageMeter for tracking the loss.
     prediction_dict = {}
     preds = []
 
-    with tqdm(valid_loader, unit="valid_batch", desc="Validation") as tqdm_valid_loader:
+    with tqdm(valid_loader, unit="valid_batch", desc=f"Validating Fold {fold}") as tqdm_valid_loader:
         for step, batch in enumerate(tqdm_valid_loader):
             inputs = collate(batch.pop("inputs"))  # collate inputs
             labels = batch.pop("labels")

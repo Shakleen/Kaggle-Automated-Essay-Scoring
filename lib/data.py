@@ -142,13 +142,14 @@ def read_data_loader_from_disk(fold: int) -> Tuple[DataLoader, DataLoader]:
     return (train_loader, valid_loader)
 
 
-def split_tokens(tokens):
+def split_tokens(tokens, stride=config.stride):
     """Splits `tokens` into multiple sequences that have at most
     `config.max_length` tokens. Uses `config.stride` for sliding
     window.
 
     Args:
         tokens (List): List of tokens.
+        stride (int): Stride length. (Default: config.stride)
 
     Returns:
         List[List[int]]: List of split token sequences.
@@ -166,7 +167,7 @@ def split_tokens(tokens):
         sequence_list.append(tokens[start:end])
 
         if remaining_tokens >= config.max_length:
-            start += config.stride
+            start += stride
         else:
             break
 
@@ -198,7 +199,7 @@ def sliding_window(df, tokenizer):
         if len(tokens) <= config.max_length:
             new_df.append(_construct_new_row(row, row["full_text"]))
         else:
-            sequence_list = split_tokens(tokens)
+            sequence_list = split_tokens(tokens, get_stride_value(row))
 
             for seq in sequence_list:
                 new_df.append(
@@ -209,3 +210,17 @@ def sliding_window(df, tokenizer):
                 )
 
     return pd.DataFrame(new_df)
+
+
+def get_stride_value(row):
+    if not config.oversample:
+        return config.stride
+
+    # Oversample scores 1 and 6
+    if row["score"] == 0:
+        return config.stride // 2
+    elif row["score"] == 5:
+        return config.stride // 3
+
+    # The rest are unchanged
+    return config.stride
