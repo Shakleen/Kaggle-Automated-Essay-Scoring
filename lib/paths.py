@@ -21,8 +21,6 @@ class Paths:
     DATA_LOADER_PATH: str = f"data/dataloader_v{config.data_version}"
 
     # Output paths
-    MODEL_OUTPUT_PATH: str = f"output/{config.model}"
+    MODEL_OUTPUT_PATH: str = os.path.join("output", config.model)
+    CONFIG_PATH: str = os.path.join(MODEL_OUTPUT_PATH, "config.pth")
     TOKENIZER_PATH: str = os.path.join(MODEL_OUTPUT_PATH, f"tokenizer_v{config.tokenizer_version}")
-
-    # Best Model Path
-    BEST_MODEL_PATH: str = "output/microsoft/deberta-v3-base/best_model"

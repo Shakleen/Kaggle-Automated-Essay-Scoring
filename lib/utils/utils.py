@@ -4,9 +4,9 @@ import torch
 import numpy as np
 import math
 import time
-from logging import getLogger, INFO, StreamHandler, FileHandler, Formatter
 
 from ..config import config
+from ..paths import Paths
 
 
 def seed_everything(seed: int = config.random_seed) -> None:
@@ -39,17 +39,7 @@ def timeSince(since, percent):
     return "%s (remain %s)" % (asMinutes(s), asMinutes(rs))
 
 
-def get_logger(filename):
-    logger = getLogger(__name__)
-    logger.setLevel(INFO)
-
-    handler1 = StreamHandler()
-    handler1.setFormatter(Formatter("%(message)s"))
-
-    handler2 = FileHandler(filename=f"{filename}.log")
-    handler2.setFormatter(Formatter("%(message)s"))
-
-    logger.addHandler(handler1)
-    logger.addHandler(handler2)
-
-    return logger
+def get_model_path(i):
+    file_prefix = config.model.replace("/", "_")
+    file_name = f"{file_prefix}_fold_{i}_best.pth"
+    return os.path.join(Paths.MODEL_OUTPUT_PATH, file_name)
