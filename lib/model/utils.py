@@ -85,3 +85,17 @@ def get_model_optimizer_and_scheduler(train_loader, device):
     num_train_steps = int(len(train_loader) / config.batch_size_train * config.epochs)
     scheduler = get_scheduler(optimizer, num_train_steps)
     return model, optimizer, scheduler
+
+
+def load_model_from_disk(model_path, device):
+    model = CustomModel(
+        config,
+        config_path=Paths.CONFIG_PATH,
+        pretrained=False,
+    )
+
+    state = torch.load(model_path)
+    model.load_state_dict(state["model"])
+    model.to(device)
+
+    return model
