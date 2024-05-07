@@ -63,7 +63,7 @@ def overall_essay_score(predictions):
     return temp[["essay_ids", "score"]]
 
 
-def ensemble_inference(test_df, tokenizer, model_paths, device):
+def ensemble_inference(test_df, tokenizer, model_paths, device, overall=True):
     # ======== DATASETS ==========
     test_dataset = CustomDataset(config, test_df, tokenizer, is_train=False)
 
@@ -77,7 +77,7 @@ def ensemble_inference(test_df, tokenizer, model_paths, device):
         drop_last=False,
     )
 
-    all_preds = [None for _ in range(config.n_folds)]
+    all_preds = [None for _ in range(len(model_paths.keys()))]
     idx = None
 
     for i, (model_path, weight) in enumerate(model_paths.items()):
@@ -85,4 +85,7 @@ def ensemble_inference(test_df, tokenizer, model_paths, device):
 
     all_preds = np.array(all_preds)
     all_preds = np.sum(all_preds, axis=0)
-    return overall_essay_score({"predictions": all_preds, "essay_ids": idx})
+
+    if overall:
+        return overall_essay_score({"predictions": all_preds, "essay_ids": idx})
+    return np.argmax(all_preds, axis=1)

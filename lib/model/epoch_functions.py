@@ -20,6 +20,7 @@ def train_epoch(
     epoch,
     scheduler,
     device,
+    group=None,
 ):
     """One epoch training pass.
 
@@ -35,7 +36,9 @@ def train_epoch(
     n_steps_per_epoch = math.ceil(len(train_loader) / config.batch_size_train)
 
     # ========== ITERATE OVER TRAIN BATCHES ============
-    with tqdm(train_loader, unit="train_batch", desc=f"Training Fold {fold}") as tqdm_train_loader:
+    with tqdm(
+        train_loader, unit="train_batch", desc=_get_tqdm_desc(fold, group)
+    ) as tqdm_train_loader:
         for step, batch in enumerate(tqdm_train_loader):
             inputs = collate(batch.pop("inputs"))
             labels = batch.pop("labels")
@@ -71,18 +74,51 @@ def train_epoch(
 
             # ========== LOG INFO ==========
             if step % config.print_freq == 0 or step == (len(train_loader) - 1):
-                wandb.log(
-                    {
-                        f"train/epoch_f{fold}": calc_epoch(
-                            epoch, n_steps_per_epoch, step
-                        ),
-                        f"train/train_loss_f{fold}": losses.avg,
-                        f"train/grad_norm_f{fold}": grad_norm,
-                        f"train/learning_rate_f{fold}": scheduler.get_lr()[0],
-                    }
+                _log_training_metrics(
+                    fold,
+                    epoch,
+                    scheduler,
+                    group,
+                    losses,
+                    n_steps_per_epoch,
+                    step,
+                    grad_norm,
                 )
 
     return losses.avg
+
+
+def _log_training_metrics(
+    fold, epoch, scheduler, group, losses, n_steps_per_epoch, step, grad_norm
+):
+    if group is None:
+        wandb.log(
+            {
+                f"train/epoch_f{fold}": calc_epoch(epoch, n_steps_per_epoch, step),
+                f"train/train_loss_f{fold}": losses.avg,
+                f"train/grad_norm_f{fold}": grad_norm,
+                f"train/learning_rate_f{fold}": scheduler.get_lr()[0],
+            }
+        )
+    else:
+        wandb.log(
+            {
+                f"train/epoch_f{fold}_g{group}": calc_epoch(
+                    epoch, n_steps_per_epoch, step
+                ),
+                f"train/train_loss_f{fold}_g{group}": losses.avg,
+                f"train/grad_norm_f{fold}_g{group}": grad_norm,
+                f"train/learning_rate_f{fold}_g{group}": scheduler.get_lr()[0],
+            }
+        )
+
+
+def _get_tqdm_desc(fold, group):
+    desc = f"Training Fold {fold}"
+
+    if group:
+        desc = f"{desc} Group {group}"
+    return desc
 
 
 def calc_epoch(epoch, n_steps_per_epoch, step):
@@ -95,7 +131,9 @@ def valid_epoch(fold, valid_loader, model, criterion, device):
     prediction_dict = {}
     preds = []
 
-    with tqdm(valid_loader, unit="valid_batch", desc=f"Validating Fold {fold}") as tqdm_valid_loader:
+    with tqdm(
+        valid_loader, unit="valid_batch", desc=f"Validating Fold {fold}"
+    ) as tqdm_valid_loader:
         for step, batch in enumerate(tqdm_valid_loader):
             inputs = collate(batch.pop("inputs"))  # collate inputs
             labels = batch.pop("labels")

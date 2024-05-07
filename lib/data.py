@@ -140,12 +140,12 @@ def read_data_loader_from_disk(
     Returns:
         Tuple[DataLoader, DataLoader]: Train and valid data loader.
     """
+    valid_file_name = f"valid_{fold}.pth"
+    
     if group is None:
-        train_file_name = f"train_{fold}_{group}.pth"
-        valid_file_name = f"valid_{fold}_{group}.pth"
-    else:
         train_file_name = f"train_{fold}.pth"
-        valid_file_name = f"valid_{fold}.pth"
+    else:
+        train_file_name = f"train_{fold}_{group}.pth"
 
     train_loader = torch.load(os.path.join(Paths.DATA_LOADER_PATH, train_file_name))
     valid_loader = torch.load(os.path.join(Paths.DATA_LOADER_PATH, valid_file_name))

@@ -38,5 +38,5 @@ config = SimpleNamespace(
 
 
 if config.debug:
-    config.epochs = 2
+    config.epochs = 1
     config.train_folds = [0]
