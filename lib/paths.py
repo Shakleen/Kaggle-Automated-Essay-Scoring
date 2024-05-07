@@ -20,6 +20,9 @@ class Paths:
     # Dataloader path
     DATA_LOADER_PATH: str = f"data/dataloader_v{config.data_version}"
 
+    # Refit dataloader path
+    REFIT_DATA_LOADER_PATH: str = f"data/refit_dataloader"
+
     # Output paths
     MODEL_OUTPUT_PATH: str = os.path.join("output", config.model)
     CONFIG_PATH: str = os.path.join(MODEL_OUTPUT_PATH, "config.pth")

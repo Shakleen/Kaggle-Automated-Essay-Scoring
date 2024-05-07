@@ -5,6 +5,7 @@ from typing import Tuple
 import pandas as pd
 import re
 from tqdm import tqdm
+import numpy as np
 
 from .config import config
 from .paths import Paths
@@ -141,7 +142,7 @@ def read_data_loader_from_disk(
         Tuple[DataLoader, DataLoader]: Train and valid data loader.
     """
     valid_file_name = f"valid_{fold}.pth"
-    
+
     if group is None:
         train_file_name = f"train_{fold}.pth"
     else:
@@ -209,7 +210,7 @@ def sliding_window(df, tokenizer):
         if len(tokens) <= config.max_length:
             new_df.append(_construct_new_row(row, row["full_text"]))
         else:
-            sequence_list = split_tokens(tokens, get_stride_value(row))
+            sequence_list = split_tokens(tokens, config.stride)
 
             for seq in sequence_list:
                 new_df.append(
@@ -222,15 +223,31 @@ def sliding_window(df, tokenizer):
     return pd.DataFrame(new_df)
 
 
-def get_stride_value(row):
-    if not config.oversample:
-        return config.stride
+def negative_sample_df(df):
+    positive_samples = df.loc[df.score.isin([0, 4, 5])].dropna()
+    negative_samples = df.loc[df.score.isin([1, 2, 3])].dropna()
 
-    # Oversample scores 1 and 6
-    if row["score"] == 0:
-        return config.stride // 2
-    elif row["score"] == 5:
-        return config.stride // 3
+    for i, sampled_negative in enumerate(
+        np.array_split(negative_samples, config.negative_sample_partitions)
+    ):
+        train_sampled_df = pd.concat([positive_samples, sampled_negative])
+        yield i, train_sampled_df.sample(frac=1, random_state=config.random_seed)
 
-    # The rest are unchanged
-    return config.stride
+
+def save_data_loaders(tokenizer, fold, train_fold, valid_fold, group=None):
+    train_loader, valid_loader = get_data_loaders(train_fold, valid_fold, tokenizer)
+
+    train_dataloader_name = (
+        f"train_{fold}.pth" if group is None else f"train_{fold}_{group}.pth"
+    )
+    train_dataloader_path = os.path.join(Paths.DATA_LOADER_PATH, train_dataloader_name)
+    torch.save(train_loader, train_dataloader_path)
+    print(f"Saved {train_dataloader_path} with {len(train_fold)} samples ")
+
+    valid_dataloader_path = os.path.join(Paths.DATA_LOADER_PATH, f"valid_{fold}.pth")
+    torch.save(valid_loader, valid_dataloader_path)
+    print(f"Saved {valid_dataloader_path} with {len(valid_fold)} samples ")
+
+    valid_csv_path = os.path.join(Paths.DATA_LOADER_PATH, f"valid_{fold}.csv")
+    valid_fold.to_csv(valid_csv_path, index=False)
+    print(f"Saved {valid_csv_path}")
