@@ -224,8 +224,8 @@ def sliding_window(df, tokenizer):
 
 
 def negative_sample_df(df):
-    positive_samples = df.loc[df.score.isin([0, 4, 5])].dropna()
-    negative_samples = df.loc[df.score.isin([1, 2, 3])].dropna()
+    positive_samples = df.loc[df.score.isin(config.positive_classes)].dropna()
+    negative_samples = df.loc[df.score.isin(config.negative_classes)].dropna()
 
     for i, sampled_negative in enumerate(
         np.array_split(negative_samples, config.negative_sample_partitions)
