@@ -21,8 +21,10 @@ class MeanPooling(nn.Module):
         return mean_embeddings
 
 
-class CustomModel(nn.Module):
-    """Source: https://www.kaggle.com/code/alejopaullier/aes-2-multi-class-classification-train?scriptVersionId=170290107&cellId=21"""
+class DeBERTA_V3(nn.Module):
+    """Source:
+    https://www.kaggle.com/code/alejopaullier/aes-2-multi-class-classification-train?scriptVersionId=170290107&cellId=21
+    """
 
     def __init__(self, cfg, config_path=None, pretrained=False):
         super().__init__()

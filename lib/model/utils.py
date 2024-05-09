@@ -7,7 +7,7 @@ from transformers import (
 )
 from torch.optim import AdamW
 
-from .deberta import CustomModel
+from .deberta import DeBERTA_V3
 from ..config import config
 from ..paths import Paths
 
@@ -66,7 +66,7 @@ def get_scheduler(optimizer, num_train_steps):
 
 
 def get_model_optimizer_and_scheduler(train_loader, device):
-    model = CustomModel(config, config_path=None, pretrained=True)
+    model = DeBERTA_V3(config, config_path=None, pretrained=True)
     torch.save(model.config, Paths.MODEL_OUTPUT_PATH + "/config.pth")
     model.to(device)
 
@@ -88,7 +88,7 @@ def get_model_optimizer_and_scheduler(train_loader, device):
 
 
 def load_model_from_disk(model_path, device):
-    model = CustomModel(
+    model = DeBERTA_V3(
         config,
         config_path=Paths.CONFIG_PATH,
         pretrained=False,
