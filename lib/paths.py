@@ -24,6 +24,7 @@ class Paths:
     REFIT_DATA_LOADER_PATH: str = f"data/refit_dataloader"
 
     ENG_WORDS_HX: str = "data/words.txt"
+    CONTRACTION_FILE_PATH: str = "data/contractions.json"
 
     # Output paths
     MODEL_OUTPUT_PATH: str = os.path.join("output", config.model)
