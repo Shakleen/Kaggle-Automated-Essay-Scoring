@@ -29,6 +29,7 @@ config = SimpleNamespace(
     negative_classes=[1, 2, 3, 4],
     print_freq=6,
     random_seed=20,
+    regression=False,
     scheduler="cosine",  # ['linear', 'cosine']
     stride=192,
     tokenizer_version=2,

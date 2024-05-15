@@ -23,6 +23,8 @@ class Paths:
     # Refit dataloader path
     REFIT_DATA_LOADER_PATH: str = f"data/refit_dataloader"
 
+    ENG_WORDS_HX: str = "data/words.txt"
+
     # Output paths
     MODEL_OUTPUT_PATH: str = os.path.join("output", config.model)
     CONFIG_PATH: str = os.path.join(MODEL_OUTPUT_PATH, "config.pth")
