@@ -2,6 +2,7 @@ import os
 
 from .config import config
 
+
 class Paths:
     # Rata paths
     ROOT_DATA_PATH: str = "data"
@@ -9,13 +10,15 @@ class Paths:
     # Path to data
     TRAIN_CSV_PATH: str = "data/processed/train.csv"
     TEST_CSV_PATH: str = "data/processed/test.csv"
-    
+
     # Competition data
     COMPETITION_TRAIN_CSV_PATH: str = "data/competition-data/train.csv"
     COMPETITION_TEST_CSE_PATH: str = "data/competition-data/test.csv"
 
     # Pursuade data
-    PERSUADE_CSV_PATH: str = "data/external/persuade_2.0_human_scores_demo_id_github.csv"
+    PERSUADE_CSV_PATH: str = (
+        "data/external/persuade_2.0_human_scores_demo_id_github.csv"
+    )
 
     # Dataloader path
     DATA_LOADER_PATH: str = f"data/dataloader_v{config.data_version}"
@@ -26,7 +29,14 @@ class Paths:
     ENG_WORDS_HX: str = "data/words.txt"
     CONTRACTION_FILE_PATH: str = "data/contractions.json"
 
+    FEATURE_ENGG_PATH: str = "data/feature_engg"
+    PARAGRAPH_FEATURES_CSV_PATH: str = os.path.join(
+        FEATURE_ENGG_PATH, "paragraph_features.csv"
+    )
+
     # Output paths
     MODEL_OUTPUT_PATH: str = os.path.join("output", config.model)
     CONFIG_PATH: str = os.path.join(MODEL_OUTPUT_PATH, "config.pth")
-    TOKENIZER_PATH: str = os.path.join(MODEL_OUTPUT_PATH, f"tokenizer_v{config.tokenizer_version}")
+    TOKENIZER_PATH: str = os.path.join(
+        MODEL_OUTPUT_PATH, f"tokenizer_v{config.tokenizer_version}"
+    )
