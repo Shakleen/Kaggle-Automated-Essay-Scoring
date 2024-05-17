@@ -33,6 +33,12 @@ class Paths:
     PARAGRAPH_FEATURES_CSV_PATH: str = os.path.join(
         FEATURE_ENGG_PATH, "paragraph_features.csv"
     )
+    SENTENCE_FEATURES_CSV_PATH: str = os.path.join(
+        FEATURE_ENGG_PATH, "sentence_features.csv"
+    )
+    WORD_FEATURES_CSV_PATH: str = os.path.join(
+        FEATURE_ENGG_PATH, "word_features.csv"
+    )
 
     # Output paths
     MODEL_OUTPUT_PATH: str = os.path.join("output", config.model)
