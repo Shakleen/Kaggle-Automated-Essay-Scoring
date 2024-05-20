@@ -7,8 +7,8 @@ import re
 from tqdm import tqdm
 import numpy as np
 
-from .config import config
-from .paths import Paths
+from ..config import config
+from ..paths import Paths
 
 
 def clean_text(text):

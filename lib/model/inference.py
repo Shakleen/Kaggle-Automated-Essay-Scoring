@@ -6,7 +6,7 @@ import pandas as pd
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 
-from ..data import collate, CustomDataset
+from ..data_tools.data import collate, CustomDataset
 from ..config import config
 from .utils import load_model_from_disk
 

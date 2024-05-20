@@ -7,7 +7,7 @@ import math
 
 from ..utils.average_meter import AverageMeter
 from ..config import config
-from ..data import collate
+from ..data_tools.data import collate
 from ..utils.utils import timeSince
 
 
