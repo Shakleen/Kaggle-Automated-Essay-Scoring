@@ -134,7 +134,7 @@ def valid_epoch(fold, valid_loader, model, criterion, device):
     with tqdm(
         valid_loader, unit="valid_batch", desc=f"Validating Fold {fold}"
     ) as tqdm_valid_loader:
-        for step, batch in enumerate(tqdm_valid_loader):
+        for _, batch in enumerate(tqdm_valid_loader):
             inputs = collate(batch.pop("inputs"))  # collate inputs
             labels = batch.pop("labels")
             student_ids = batch.pop("essay_ids")

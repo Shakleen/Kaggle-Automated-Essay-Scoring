@@ -29,22 +29,7 @@ class Paths:
     ENG_WORDS_HX: str = "data/words.txt"
     CONTRACTION_FILE_PATH: str = "data/contractions.json"
 
-    FEATURE_ENGG_PATH: str = "data/feature_engg"
-    PARAGRAPH_FEATURES_CSV_PATH: str = os.path.join(
-        FEATURE_ENGG_PATH, "paragraph_features.csv"
-    )
-    SENTENCE_FEATURES_CSV_PATH: str = os.path.join(
-        FEATURE_ENGG_PATH, "sentence_features.csv"
-    )
-    WORD_FEATURES_CSV_PATH: str = os.path.join(
-        FEATURE_ENGG_PATH, "word_features.csv"
-    )
-    TFIDF_FEATURES_CSV_PATH: str = os.path.join(
-        FEATURE_ENGG_PATH, "tfidf_features.csv"
-    )
-    COUNT_FEATURES_CSV_PATH: str = os.path.join(
-        FEATURE_ENGG_PATH, "tfidf_count_features.csv"
-    )
+    FEATURE_ENGG_CSV_PATH: str = "data/feature_engg/all_features.csv"
 
     # Output paths
     MODEL_OUTPUT_PATH: str = os.path.join("output", config.model)
