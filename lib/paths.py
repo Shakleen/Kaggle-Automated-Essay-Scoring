@@ -42,6 +42,9 @@ class Paths:
     TFIDF_FEATURES_CSV_PATH: str = os.path.join(
         FEATURE_ENGG_PATH, "tfidf_features.csv"
     )
+    COUNT_FEATURES_CSV_PATH: str = os.path.join(
+        FEATURE_ENGG_PATH, "tfidf_count_features.csv"
+    )
 
     # Output paths
     MODEL_OUTPUT_PATH: str = os.path.join("output", config.model)
