@@ -51,19 +51,23 @@ def inference(model_path, no, weight, test_loader, device):
     return preds, idx
 
 
-def overall_essay_score(predictions):
-    temp = {"essay_ids": predictions["essay_ids"]}
+def overall_essay_score(predictions, logits=False):
+    """Calculates the overall score from `predictions` which
+    contain logits and essay ids."""
+    temp = {"essay_id": predictions["essay_id"]}
 
     for i in range(predictions["predictions"].shape[1]):
         temp[f"p_{i}"] = predictions["predictions"][:, i]
 
     temp = pd.DataFrame(temp)
-    temp = temp.groupby("essay_ids").mean().reset_index()
+    temp = temp.groupby("essay_id").mean().reset_index()
     temp["score"] = np.argmax(temp.loc[:, "p_0":], axis=1)
-    return temp[["essay_ids", "score"]]
+    return temp if logits else temp[["essay_id", "score"]]
 
 
-def ensemble_inference(test_df, tokenizer, model_paths, device, overall=True):
+def ensemble_inference(
+    test_df, tokenizer, model_paths, device, logits=False, overall=True
+):
     # ======== DATASETS ==========
     test_dataset = CustomDataset(config, test_df, tokenizer, is_train=False)
 
@@ -87,5 +91,6 @@ def ensemble_inference(test_df, tokenizer, model_paths, device, overall=True):
     all_preds = np.sum(all_preds, axis=0)
 
     if overall:
-        return overall_essay_score({"predictions": all_preds, "essay_ids": idx})
+        return overall_essay_score({"predictions": all_preds, "essay_id": idx}, logits)
+
     return np.argmax(all_preds, axis=1)

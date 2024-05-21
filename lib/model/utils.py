@@ -99,3 +99,25 @@ def load_model_from_disk(model_path, device):
     model.to(device)
 
     return model
+
+
+def quadratic_weighted_kappa(y_true, y_pred):
+    """For LGBM Only"""
+    y_true = y_true + config.lgbm_a
+    y_pred = (y_pred + config.lgbm_a).clip(1, 6).round()
+    qwk = cohen_kappa_score(y_true, y_pred, weights="quadratic")
+    return "QWK", qwk, True
+
+
+def qwk_obj(y_true, y_pred):
+    """For LGBM Only"""
+    labels = y_true + config.lgbm_a
+    preds = y_pred + config.lgbm_a
+    preds = preds.clip(1, 6)
+    f = 1 / 2 * np.sum((preds - labels) ** 2)
+    g = 1 / 2 * np.sum((preds - config.lgbm_a) ** 2 + config.lgbm_b)
+    df = preds - labels
+    dg = preds - config.lgbm_a
+    grad = (df / g - f * dg / g**2) * len(labels)
+    hess = np.ones(len(labels))
+    return grad, hess

@@ -216,7 +216,6 @@ def word_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     feature_df = feature_df.set_axis(feature_df.columns.map("_".join), axis=1)
-    feature_df = pd.concat([feature_df, df.groupby("essay_id")["score"].mean()], axis=1)
     return feature_df.reset_index()
 
 
@@ -227,20 +226,27 @@ def func(x):
     return x
 
 
-def generate_tfidf_features(df: pd.DataFrame) -> pd.DataFrame:
-    vectorizer = TfidfVectorizer(
-        tokenizer=func,
-        preprocessor=func,
-        token_pattern=None,
-        strip_accents="unicode",
-        analyzer="word",
-        ngram_range=(3, 6),
-        min_df=0.05,
-        max_df=0.95,
-        sublinear_tf=True,
-    )
+def generate_tfidf_features(
+    df: pd.DataFrame,
+    vectorizer: TfidfVectorizer = None,
+) -> pd.DataFrame:
+    if not vectorizer:
+        vectorizer = TfidfVectorizer(
+            tokenizer=func,
+            preprocessor=func,
+            token_pattern=None,
+            strip_accents="unicode",
+            analyzer="word",
+            ngram_range=(3, 6),
+            min_df=0.05,
+            max_df=0.95,
+            sublinear_tf=True,
+        )
 
-    tfidf_features = vectorizer.fit_transform([i for i in df["full_text"]])
+        tfidf_features = vectorizer.fit_transform([i for i in df["full_text"]])
+    else:
+        tfidf_features = vectorizer.transform([i for i in df["full_text"]])
+
     tfidf_features = pd.DataFrame(tfidf_features.toarray())
     tfidf_features.columns = [f"tfidf_{i}" for i in range(tfidf_features.shape[1])]
     tfidf_features["essay_id"] = df["essay_id"].copy()
@@ -248,19 +254,26 @@ def generate_tfidf_features(df: pd.DataFrame) -> pd.DataFrame:
     return vectorizer, tfidf_features
 
 
-def generate_count_features(df: pd.DataFrame) -> pd.DataFrame:
-    vectorizer_cnt = CountVectorizer(
-        tokenizer=func,
-        preprocessor=func,
-        token_pattern=None,
-        strip_accents="unicode",
-        analyzer="word",
-        ngram_range=(2, 3),
-        min_df=0.10,
-        max_df=0.85,
-    )
+def generate_count_features(
+    df: pd.DataFrame,
+    vectorizer_cnt: CountVectorizer = None,
+) -> pd.DataFrame:
+    if not vectorizer_cnt:
+        vectorizer_cnt = CountVectorizer(
+            tokenizer=func,
+            preprocessor=func,
+            token_pattern=None,
+            strip_accents="unicode",
+            analyzer="word",
+            ngram_range=(2, 3),
+            min_df=0.10,
+            max_df=0.85,
+        )
 
-    count_features = vectorizer_cnt.fit_transform([i for i in df["full_text"]])
+        count_features = vectorizer_cnt.fit_transform([i for i in df["full_text"]])
+    else:
+        count_features = vectorizer_cnt.transform([i for i in df["full_text"]])
+
     count_features = pd.DataFrame(count_features.toarray())
     count_features.columns = [
         f"tfidf_count_{i}" for i in range(count_features.shape[1])
