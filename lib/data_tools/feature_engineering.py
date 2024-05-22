@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from nltk import sent_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from scipy.stats import kurtosis
 
 from lib.paths import Paths
 
@@ -118,8 +119,20 @@ def paragraph_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
         [
             feature_df,
             df.groupby("essay_id")[feature_list]
-            .agg([lambda x: np.quantile(x, 0.25), lambda x: np.quantile(x, 0.75)])
-            .rename(columns={"<lambda_0>": "q1", "<lambda_1>": "q3"}),
+            .agg(
+                [
+                    lambda x: np.quantile(x, 0.25),
+                    lambda x: np.quantile(x, 0.75),
+                    lambda x: kurtosis(x),
+                ]
+            )
+            .rename(
+                columns={
+                    "<lambda_0>": "q1",
+                    "<lambda_1>": "q3",
+                    "<lambda_2>": "kurtosis",
+                }
+            ),
         ],
         axis=1,
     )
@@ -164,8 +177,20 @@ def sentence_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
         [
             feature_df,
             df.groupby("essay_id")[feature_list]
-            .agg([lambda x: np.quantile(x, 0.25), lambda x: np.quantile(x, 0.75)])
-            .rename(columns={"<lambda_0>": "q1", "<lambda_1>": "q3"}),
+            .agg(
+                [
+                    lambda x: np.quantile(x, 0.25),
+                    lambda x: np.quantile(x, 0.75),
+                    lambda x: kurtosis(x),
+                ]
+            )
+            .rename(
+                columns={
+                    "<lambda_0>": "q1",
+                    "<lambda_1>": "q3",
+                    "<lambda_2>": "kurtosis",
+                }
+            ),
         ],
         axis=1,
     )

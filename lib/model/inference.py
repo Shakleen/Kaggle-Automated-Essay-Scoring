@@ -31,7 +31,7 @@ def inference(model_path, no, weight, test_loader, device):
 
             with torch.no_grad():
                 y_preds = model(inputs)  # forward propagation pass
-                y_preds = softmax(y_preds.clone().detach()) * weight
+                y_preds = softmax(y_preds.clone().detach())# * weight
                 y_preds = y_preds.to("cpu").numpy().reshape(-1, config.num_classes)
 
             if preds is None:
@@ -88,7 +88,7 @@ def ensemble_inference(
         all_preds[i], idx = inference(model_path, i, weight, test_loader, device)
 
     all_preds = np.array(all_preds)
-    all_preds = np.sum(all_preds, axis=0)
+    all_preds = np.mean(all_preds, axis=0)
 
     if overall:
         return overall_essay_score({"predictions": all_preds, "essay_id": idx}, logits)
