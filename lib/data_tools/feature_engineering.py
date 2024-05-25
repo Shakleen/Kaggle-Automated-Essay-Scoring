@@ -103,6 +103,20 @@ def process_paragraph(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def calculate_length_features(df, feature_name, length_range):
+    feature_df = pd.DataFrame()
+
+    for l in length_range:
+        temp = (
+            df.groupby("essay_id")[feature_name]
+            .agg([lambda x: len(x) < l, lambda x: len(x) >= l])
+            .rename(columns={"<lambda_0>": f"len<{l}", "<lambda_1>": f"len>={l}"})
+        ).reset_index(drop=True)
+        feature_df = pd.concat([feature_df, temp], axis=1)
+
+    return feature_df
+
+
 def paragraph_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     feature_list = [
         "paragraph_error_count",
@@ -137,8 +151,21 @@ def paragraph_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
         axis=1,
     )
 
+    for name, lengths in [
+        ("paragraph_char_count", range(50, 701, 50)),
+        ("paragraph_word_count", range(50, 501, 50)),
+        ("paragraph_sentence_count", range(5, 51, 5)),
+        ("paragraph_error_count", range(5, 51, 5)),
+    ]:
+        feature_df = pd.concat(
+            [feature_df, calculate_length_features(df, name, lengths)],
+            axis=1,
+        )
+
     feature_df = feature_df.set_axis(feature_df.columns.map("_".join), axis=1)
-    return feature_df.reset_index()
+    feature_df.reset_index(inplace=True)
+    feature_df.rename(columns={"index": "essay_id"}, inplace=True)
+    return feature_df
 
 
 def process_sentence(df: pd.DataFrame) -> pd.DataFrame:
@@ -195,8 +222,20 @@ def sentence_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
         axis=1,
     )
 
+    for name, lengths in [
+        ("sentence_char_count", range(25, 301, 25)),
+        ("sentence_word_count", range(5, 51, 5)),
+        ("sentence_error_count", range(2, 11, 2)),
+    ]:
+        feature_df = pd.concat(
+            [feature_df, calculate_length_features(df, name, lengths)],
+            axis=1,
+        )
+
     feature_df = feature_df.set_axis(feature_df.columns.map("_".join), axis=1)
-    return feature_df.reset_index()
+    feature_df.reset_index(inplace=True)
+    feature_df.rename(columns={"index": "essay_id"}, inplace=True)
+    return feature_df
 
 
 def process_word(df: pd.DataFrame) -> pd.DataFrame:
@@ -240,8 +279,18 @@ def word_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
         axis=1,
     )
 
+    for l in range(5, 31, 2):
+        temp = (
+            df.groupby("essay_id")[feature_list]
+            .agg([lambda x: len(x) < l, lambda x: len(x) >= l])
+            .rename(columns={"<lambda_0>": f"len<{l}", "<lambda_1>": f"len>={l}"})
+        ).reset_index(drop=True)
+        feature_df = pd.concat([feature_df, temp], axis=1)
+
     feature_df = feature_df.set_axis(feature_df.columns.map("_".join), axis=1)
-    return feature_df.reset_index()
+    feature_df.reset_index(inplace=True)
+    feature_df.rename(columns={"index": "essay_id"}, inplace=True)
+    return feature_df
 
 
 # Need to have this separately, otherwise can't pickle
