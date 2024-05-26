@@ -57,11 +57,11 @@ def overall_essay_score(predictions, logits=False):
     temp = {"essay_id": predictions["essay_id"]}
 
     for i in range(predictions["predictions"].shape[1]):
-        temp[f"p_{i}"] = predictions["predictions"][:, i]
+        temp[f"score_prob_{i}"] = predictions["predictions"][:, i]
 
     temp = pd.DataFrame(temp)
     temp = temp.groupby("essay_id").mean().reset_index()
-    temp["score"] = np.argmax(temp.loc[:, "p_0":], axis=1)
+    temp["score"] = np.argmax(temp.loc[:, "score_prob_0":], axis=1)
     return temp if logits else temp[["essay_id", "score"]]
 
 
