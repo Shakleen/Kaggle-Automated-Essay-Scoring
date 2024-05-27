@@ -11,9 +11,7 @@ def log_metrics(df, prefix):
                 probs=None,
                 y_true=df["score"],
                 preds=df["pred_score"],
-                class_names=list(
-                    range(config.num_classes),
-                ),
+                class_names=list(range(config.num_classes)),
             )
         }
     )
