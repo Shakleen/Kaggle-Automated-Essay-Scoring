@@ -31,7 +31,7 @@ def inference(model_path, no, weight, test_loader, device):
 
             with torch.no_grad():
                 y_preds = model(inputs)  # forward propagation pass
-                y_preds = softmax(y_preds.clone().detach())# * weight
+                y_preds = softmax(y_preds.clone().detach()) * weight
                 y_preds = y_preds.to("cpu").numpy().reshape(-1, config.num_classes)
 
             if preds is None:
@@ -51,22 +51,39 @@ def inference(model_path, no, weight, test_loader, device):
     return preds, idx
 
 
-def overall_essay_score(predictions, logits=False):
+def overall_essay_score(predictions, logits=False, reduction=True):
     """Calculates the overall score from `predictions` which
     contain logits and essay ids."""
     temp = {"essay_id": predictions["essay_id"]}
 
-    for i in range(predictions["predictions"].shape[1]):
-        temp[f"score_prob_{i}"] = predictions["predictions"][:, i]
+    if reduction:
+        for i in range(config.num_classes):
+            temp[f"deberta_c{i}"] = predictions["predictions"][:, i]
+    else:
+        for i in range(config.n_folds):
+            for j in range(config.num_classes):
+                temp[f"deberta_m{i}_c{j}"] = predictions["predictions"][
+                    :, j + (i * config.num_classes)
+                ]
 
     temp = pd.DataFrame(temp)
     temp = temp.groupby("essay_id").mean().reset_index()
-    temp["score"] = np.argmax(temp.loc[:, "score_prob_0":], axis=1)
+
+    if not reduction:
+        return temp
+
+    temp["score"] = np.argmax(temp.loc[:, "deberta_c0":], axis=1)
     return temp if logits else temp[["essay_id", "score"]]
 
 
 def ensemble_inference(
-    test_df, tokenizer, model_paths, device, logits=False, overall=True
+    test_df,
+    tokenizer,
+    model_paths,
+    device,
+    logits=False,
+    overall=True,
+    model_wise_reduction=True,
 ):
     # ======== DATASETS ==========
     test_dataset = CustomDataset(config, test_df, tokenizer, is_train=False)
@@ -85,12 +102,26 @@ def ensemble_inference(
     idx = None
 
     for i, (model_path, weight) in enumerate(model_paths.items()):
-        all_preds[i], idx = inference(model_path, i, weight, test_loader, device)
+        all_preds[i], idx = inference(
+            model_path,
+            i,
+            weight if not model_wise_reduction else 1,
+            test_loader,
+            device,
+        )
 
     all_preds = np.array(all_preds)
-    all_preds = np.mean(all_preds, axis=0)
+
+    if model_wise_reduction:
+        all_preds = np.sum(all_preds, axis=0)
+    else:
+        all_preds = np.hstack(all_preds)
 
     if overall:
-        return overall_essay_score({"predictions": all_preds, "essay_id": idx}, logits)
+        return overall_essay_score(
+            {"predictions": all_preds, "essay_id": idx},
+            logits,
+            model_wise_reduction,
+        )
 
     return np.argmax(all_preds, axis=1)
