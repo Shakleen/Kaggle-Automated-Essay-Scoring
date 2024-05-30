@@ -10,7 +10,9 @@ from scipy.stats import kurtosis
 
 from lib.paths import Paths
 
+
 nlp = spacy.load("en_core_web_sm")
+broad_operations = ["mean", "max", "sum"]
 
 with open(Paths.ENG_WORDS_HX, "r") as file:
     english_vocab = set(word.strip().lower() for word in file)
@@ -109,12 +111,7 @@ def calculate_length_features(df, feature_name, length_range):
     for l in length_range:
         temp = (
             df.groupby("essay_id")[feature_name]
-            .agg(
-                [
-                    lambda x: len(x) < l,
-                    lambda x: len(x) >= l,
-                ]
-            )
+            .agg([lambda x: len(x) < l, lambda x: len(x) >= l])
             .rename(
                 columns={
                     "<lambda_0>": f"{feature_name}_len_l_{l}",
@@ -135,28 +132,14 @@ def paragraph_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
         "paragraph_sentence_count",
     ]
 
-    feature_df = df.groupby("essay_id")[feature_list].agg(
-        ["mean", "min", "max", "sum", "first", "last"]
-    )
+    feature_df = df.groupby("essay_id")[feature_list].agg(broad_operations)
 
     feature_df = pd.concat(
         [
             feature_df,
             df.groupby("essay_id")[feature_list]
-            .agg(
-                [
-                    lambda x: np.quantile(x, 0.25),
-                    lambda x: np.quantile(x, 0.75),
-                    lambda x: kurtosis(x),
-                ]
-            )
-            .rename(
-                columns={
-                    "<lambda_0>": "q1",
-                    "<lambda_1>": "q3",
-                    "<lambda_2>": "kurtosis",
-                }
-            ),
+            .agg([lambda x: np.quantile(x, 0.25), lambda x: np.quantile(x, 0.75)])
+            .rename(columns={"<lambda_0>": "q1", "<lambda_1>": "q3"}),
         ],
         axis=1,
     )
@@ -165,10 +148,8 @@ def paragraph_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     feature_df.reset_index(inplace=True)
 
     for name, lengths in [
-        ("paragraph_char_count", range(50, 701, 50)),
-        ("paragraph_word_count", range(50, 501, 50)),
-        ("paragraph_sentence_count", range(5, 51, 5)),
-        ("paragraph_error_count", range(5, 51, 5)),
+        ("paragraph_sentence_count", range(1, 21, 5)),
+        ("paragraph_error_count", range(1, 21, 5)),
     ]:
         feature_df = pd.concat(
             [feature_df, calculate_length_features(df, name, lengths)],
@@ -206,28 +187,14 @@ def sentence_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
         "sentence_word_count",
     ]
 
-    feature_df = df.groupby("essay_id")[feature_list].agg(
-        ["mean", "min", "max", "sum", "first", "last"]
-    )
+    feature_df = df.groupby("essay_id")[feature_list].agg(broad_operations)
 
     feature_df = pd.concat(
         [
             feature_df,
             df.groupby("essay_id")[feature_list]
-            .agg(
-                [
-                    lambda x: np.quantile(x, 0.25),
-                    lambda x: np.quantile(x, 0.75),
-                    lambda x: kurtosis(x),
-                ]
-            )
-            .rename(
-                columns={
-                    "<lambda_0>": "q1",
-                    "<lambda_1>": "q3",
-                    "<lambda_2>": "kurtosis",
-                }
-            ),
+            .agg([lambda x: np.quantile(x, 0.25), lambda x: np.quantile(x, 0.75)])
+            .rename(columns={"<lambda_0>": "q1", "<lambda_1>": "q3"}),
         ],
         axis=1,
     )
@@ -236,9 +203,8 @@ def sentence_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     feature_df.reset_index(inplace=True)
 
     for name, lengths in [
-        ("sentence_char_count", range(25, 301, 25)),
-        ("sentence_word_count", range(10, 101, 10)),
-        ("sentence_error_count", range(5, 51, 5)),
+        ("sentence_word_count", range(1, 21, 5)),
+        ("sentence_error_count", range(1, 21, 5)),
     ]:
         feature_df = pd.concat(
             [feature_df, calculate_length_features(df, name, lengths)],
@@ -271,20 +237,8 @@ def word_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
         [
             feature_df,
             df.groupby("essay_id")[feature_list]
-            .agg(
-                [
-                    lambda x: np.quantile(x, 0.25),
-                    lambda x: np.quantile(x, 0.50),
-                    lambda x: np.quantile(x, 0.75),
-                ]
-            )
-            .rename(
-                columns={
-                    "<lambda_0>": "q1",
-                    "<lambda_1>": "q2",
-                    "<lambda_1>": "q3",
-                }
-            ),
+            .agg([lambda x: np.quantile(x, 0.25), lambda x: np.quantile(x, 0.75)])
+            .rename(columns={"<lambda_0>": "q1", "<lambda_1>": "q3"}),
         ],
         axis=1,
     )
@@ -310,6 +264,7 @@ def func(x):
 def generate_tfidf_features(
     df: pd.DataFrame,
     vectorizer: TfidfVectorizer = None,
+    max_feature_count: int = 100,
 ) -> pd.DataFrame:
     if not vectorizer:
         vectorizer = TfidfVectorizer(
@@ -322,6 +277,8 @@ def generate_tfidf_features(
             min_df=0.05,
             max_df=0.95,
             sublinear_tf=True,
+            stop_words="english",
+            max_features=max_feature_count,
         )
 
         tfidf_features = vectorizer.fit_transform([i for i in df["full_text"]])
