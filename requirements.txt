@@ -11,7 +11,7 @@ async-lru==2.0.4
 attrs==23.2.0
 Babel==2.15.0
 beautifulsoup4==4.12.3
-bertopic==0.16.1
+bertopic==0.16.2
 bleach==6.1.0
 blis==0.7.11
 cachetools==5.3.3

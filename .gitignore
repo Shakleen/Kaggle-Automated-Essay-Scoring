@@ -6,3 +6,6 @@
 **/.env
 **/test.ipynb
 **/.ipynb_checkpoints
+
+**/lib/textstat/textstat-0.7.3.dist-info
+**/lib/pyspellchecker/pyspellchecker-0.8.1.dist-info
