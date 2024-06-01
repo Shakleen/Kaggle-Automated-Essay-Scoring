@@ -22,6 +22,8 @@ charset-normalizer==3.3.2
 click==8.1.7
 cloudpathlib==0.16.0
 cloudpickle==3.0.0
+colorcet==3.1.0
+colorspacious==1.1.2
 comm==0.2.2
 confection==0.1.4
 contourpy==1.2.1
@@ -37,6 +39,8 @@ dask==2024.1.1
 dask-cuda==24.4.0
 dask-cudf-cu12==24.4.1
 dask-expr==0.4.0
+datamapplot==0.3.0
+datashader==0.16.2
 debugpy==1.8.1
 decorator==5.1.1
 defusedxml==0.7.1
@@ -59,6 +63,7 @@ httpcore==1.0.5
 httpx==0.27.0
 huggingface-hub==0.22.2
 idna==3.7
+imageio==2.34.1
 importlib_metadata==7.1.0
 ipykernel==6.29.4
 ipython==8.24.0
@@ -86,6 +91,7 @@ jupyterlab_widgets==3.0.10
 kiwisolver==1.4.5
 langcodes==3.4.0
 language_data==1.2.0
+lazy_loader==0.4
 lightgbm==4.3.0
 llvmlite==0.42.0
 locket==1.0.0
@@ -99,6 +105,7 @@ mistune==3.0.2
 mpmath==1.3.0
 msgpack==1.0.8
 multidict==6.0.5
+multipledispatch==1.0.0
 murmurhash==1.0.10
 nbclient==0.10.0
 nbconvert==7.16.4
@@ -127,6 +134,7 @@ overrides==7.7.0
 packaging==24.0
 pandas==2.2.1
 pandocfilters==1.5.1
+param==2.1.0
 parso==0.8.4
 partd==1.4.2
 pexpect==4.9.0
@@ -143,15 +151,18 @@ ptyprocess==0.7.0
 pure-eval==0.2.2
 pyarrow==14.0.2
 pycparser==2.22
+pyct==0.5.0
 pydantic==2.7.1
 pydantic_core==2.18.2
 Pygments==2.17.2
+pylabeladjust==0.1.13
 pylibcugraph-cu12==24.4.0
 pylibraft-cu12==24.4.0
 pynndescent==0.5.12
 pynvjitlink-cu12==0.2.3
 pynvml==11.4.1
 pyparsing==3.1.2
+Pyqtree==1.0.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-json-logger==2.0.7
@@ -171,6 +182,7 @@ rich==13.7.1
 rmm-cu12==24.4.0
 rpds-py==0.18.0
 safetensors==0.4.3
+scikit-image==0.23.2
 scikit-learn==1.4.2
 scipy==1.13.0
 Send2Trash==1.8.3
@@ -195,6 +207,7 @@ tenacity==8.2.3
 terminado==0.18.1
 thinc==8.2.3
 threadpoolctl==3.5.0
+tifffile==2024.5.22
 tinycss2==1.3.0
 tokenizers==0.15.2
 toolz==0.12.1
@@ -221,6 +234,7 @@ webcolors==1.13
 webencodings==0.5.1
 websocket-client==1.8.0
 widgetsnbextension==4.0.10
+xarray==2024.5.0
 yarl==1.9.4
 zict==3.0.0
 zipp==3.18.2
