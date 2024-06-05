@@ -33,19 +33,6 @@ def count_spelling_errors(text):
     return spelling_errors
 
 
-contraction_dict = json.load(open(Paths.CONTRACTION_FILE_PATH, "r"))
-contraction_re = re.compile("(%s)" % "|".join(contraction_dict.keys()))
-
-
-def expand_contractions(text: str, c_re=contraction_re) -> str:
-    """Replaces contracted word/phrase with enlongated word/phrase."""
-
-    def replace(match):
-        return contraction_dict[match.group(0)]
-
-    return c_re.sub(replace, text)
-
-
 def remove_HTML_tags(text: str) -> str:
     """Remove HTML tags from a text string"""
     return re.sub(r"<[^>]*>", "", text)

@@ -28,6 +28,7 @@ class Paths:
 
     ENG_WORDS_HX: str = "data/words.txt"
     CONTRACTION_FILE_PATH: str = "data/contractions.json"
+    WORD_LIST_DIR: str = "data/word_list"
 
     ROOT_FEATURE_PATH: str = "data/feature_engg/"
     FEATURE_ENGG_CSV_PATH: str = os.path.join(ROOT_FEATURE_PATH, "all_features.csv")
