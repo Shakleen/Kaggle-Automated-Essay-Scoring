@@ -6,8 +6,6 @@ from nltk.tokenize import word_tokenize
 import numpy as np
 
 from lib.paths import Paths
-from lib.pyspellchecker.spellchecker import SpellChecker
-from lib.textstat import textstat
 
 
 def get_word_list_from_file(file_name):
@@ -93,62 +91,60 @@ def process_for_rare_words(df: pd.DataFrame, drop: bool) -> pd.DataFrame:
     return df
 
 
-def process_for_POS(df: pd.DataFrame, drop: bool) -> pd.DataFrame:
-    """
-    List from this repo:
-    https://github.com/david47k/top-english-wordlists?tab=readme-ov-file
-    """
-    df["noun"] = df["words"].map(lambda x: [y for y in x if y in noun_words])
-    df["verb"] = df["words"].map(lambda x: [y for y in x if y in verb_words])
-    df["pronoun"] = df["words"].map(lambda x: [y for y in x if y in pronoun_words])
-    df["adjective"] = df["words"].map(lambda x: [y for y in x if y in adj_words])
-    df["adverb"] = df["words"].map(lambda x: [y for y in x if y in adv_words])
-    df["determiner"] = df["words"].map(lambda x: [y for y in x if y in deter_words])
-    df["conjunction"] = df["words"].map(lambda x: [y for y in x if y in conj_words])
-    df["numerical"] = df["words"].map(lambda x: [y for y in x if y in numerical_words])
+# Not worth it
+# def process_for_POS(df: pd.DataFrame, drop: bool) -> pd.DataFrame:
+#     """
+#     List from this repo:
+#     https://github.com/david47k/top-english-wordlists?tab=readme-ov-file
+#     """
+#     df["noun"] = df["words"].map(lambda x: [y for y in x if y in noun_words])
+#     df["verb"] = df["words"].map(lambda x: [y for y in x if y in verb_words])
+#     df["pronoun"] = df["words"].map(lambda x: [y for y in x if y in pronoun_words])
+#     df["adjective"] = df["words"].map(lambda x: [y for y in x if y in adj_words])
+#     df["adverb"] = df["words"].map(lambda x: [y for y in x if y in adv_words])
+#     df["determiner"] = df["words"].map(lambda x: [y for y in x if y in deter_words])
+#     df["conjunction"] = df["words"].map(lambda x: [y for y in x if y in conj_words])
+#     df["numerical"] = df["words"].map(lambda x: [y for y in x if y in numerical_words])
 
-    df["word_noun_percentage"] = df["noun"].map(lambda x: len(x)) / df["word_count"]
-    df["word_verb_percentage"] = df["verb"].map(lambda x: len(x)) / df["word_count"]
-    df["word_pronoun_percentage"] = (
-        df["pronoun"].map(lambda x: len(x)) / df["word_count"]
-    )
-    df["word_adjective_percentage"] = (
-        df["adjective"].map(lambda x: len(x)) / df["word_count"]
-    )
-    df["word_adverb_percentage"] = df["adverb"].map(lambda x: len(x)) / df["word_count"]
-    df["word_determiner_percentage"] = (
-        df["determiner"].map(lambda x: len(x)) / df["word_count"]
-    )
-    df["word_conjunction_percentage"] = (
-        df["conjunction"].map(lambda x: len(x)) / df["word_count"]
-    )
-    df["word_numerical_percentage"] = (
-        df["numerical"].map(lambda x: len(x)) / df["word_count"]
-    )
+#     df["word_noun_percentage"] = df["noun"].map(lambda x: len(x)) / df["word_count"]
+#     df["word_verb_percentage"] = df["verb"].map(lambda x: len(x)) / df["word_count"]
+#     df["word_pronoun_percentage"] = (
+#         df["pronoun"].map(lambda x: len(x)) / df["word_count"]
+#     )
+#     df["word_adjective_percentage"] = (
+#         df["adjective"].map(lambda x: len(x)) / df["word_count"]
+#     )
+#     df["word_adverb_percentage"] = df["adverb"].map(lambda x: len(x)) / df["word_count"]
+#     df["word_determiner_percentage"] = (
+#         df["determiner"].map(lambda x: len(x)) / df["word_count"]
+#     )
+#     df["word_conjunction_percentage"] = (
+#         df["conjunction"].map(lambda x: len(x)) / df["word_count"]
+#     )
+#     df["word_numerical_percentage"] = (
+#         df["numerical"].map(lambda x: len(x)) / df["word_count"]
+#     )
 
-    if drop:
-        df.drop(
-            columns=[
-                "noun",
-                "verb",
-                "pronoun",
-                "adjective",
-                "adverb",
-                "determiner",
-                "conjunction",
-                "numerical",
-            ],
-            inplace=True,
-        )
+#     if drop:
+#         df.drop(
+#             columns=[
+#                 "noun",
+#                 "verb",
+#                 "pronoun",
+#                 "adjective",
+#                 "adverb",
+#                 "determiner",
+#                 "conjunction",
+#                 "numerical",
+#             ],
+#             inplace=True,
+#         )
 
-    return df
+#     return df
 
 
 def process_for_mistakes(df: pd.DataFrame, drop: bool) -> pd.DataFrame:
-    spellchecker = SpellChecker()
-
-    df["mistakes"] = df["words"].map(lambda x: spellchecker.unknown(x))
-    df["mistakes"] = df["mistakes"].map(lambda x: x.difference(all_words))
+    df["mistakes"] = df["words"].map(lambda x: set(x).difference(all_words))
 
     df["word_mistake_percentage"] = (
         df["mistakes"].map(lambda x: len(x)) / df["word_count"]
@@ -160,29 +156,30 @@ def process_for_mistakes(df: pd.DataFrame, drop: bool) -> pd.DataFrame:
     return df
 
 
-def process_for_difficult_words(df: pd.DataFrame, drop: bool) -> pd.DataFrame:
-    """
-    Credit to this repo by andrei-papou
-    https://github.com/andrei-papou/textstat
-    """
-    df["word_difficult_percentage"] = (
-        df["full_text"].map(textstat.difficult_words) / df["word_count"]
-    )
+# TODO: Find a way to implement without library usage
+# def process_for_difficult_words(df: pd.DataFrame, drop: bool) -> pd.DataFrame:
+#     """
+#     Credit to this repo by andrei-papou
+#     https://github.com/andrei-papou/textstat
+#     """
+#     df["word_difficult_percentage"] = (
+#         df["full_text"].map(textstat.difficult_words) / df["word_count"]
+#     )
 
-    if drop:
-        df.drop(columns=["full_text"], inplace=True)
+#     if drop:
+#         df.drop(columns=["full_text"], inplace=True)
 
-    return df
+#     return df
 
 
 def calculate_percentages(df, drop):
     df = process_word(df)
     df["word_count"] = df["words"].map(lambda x: len(x))
 
-    df = process_for_difficult_words(df, drop)
+    # df = process_for_difficult_words(df, drop)
     df = process_for_common_words(df, drop)
     df = process_for_rare_words(df, drop)
-    df = process_for_POS(df, drop)
+    # df = process_for_POS(df, drop)
     df = process_for_mistakes(df, drop)
 
     if drop:
@@ -198,16 +195,16 @@ def engineer_word_features(df: pd.DataFrame, drop=True) -> pd.DataFrame:
     feature_list = [
         "word_common_percentage",
         "word_rare_percentage",
-        "word_noun_percentage",
-        "word_verb_percentage",
-        "word_pronoun_percentage",
-        "word_adjective_percentage",
-        "word_adverb_percentage",
-        "word_determiner_percentage",
-        "word_conjunction_percentage",
-        "word_numerical_percentage",
+        # "word_noun_percentage",
+        # "word_verb_percentage",
+        # "word_pronoun_percentage",
+        # "word_adjective_percentage",
+        # "word_adverb_percentage",
+        # "word_determiner_percentage",
+        # "word_conjunction_percentage",
+        # "word_numerical_percentage",
         "word_mistake_percentage",
-        "word_difficult_percentage",
+        # "word_difficult_percentage",
     ]
 
     feature_df = df.groupby("essay_id")[feature_list].agg(broad_operations)
