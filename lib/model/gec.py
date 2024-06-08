@@ -1,6 +1,7 @@
 import re
 from nltk import sent_tokenize
 import numpy as np
+import pandas as pd
 
 
 def data_preprocessing(x: str) -> str:
@@ -20,6 +21,17 @@ def process_sentence(df: pd.DataFrame) -> pd.DataFrame:
     df["sentence"] = df["full_text"].map(lambda x: sent_tokenize(x))
     df = df.explode("sentence").reset_index(drop=True)
     df["sentence"] = df["sentence"].map(data_preprocessing)
+    return df
+
+
+def preprocess(df: pd.DataFrame, tokenizer) -> pd.DataFrame:
+    df["token_length"] = df["sentence"].map(
+        lambda x: tokenizer(x, return_tensors="pt").input_ids.shape[1]
+    )
+    df.drop(
+        index=df[(df.token_length < 4)].index,
+        inplace=True,
+    )
     return df
 
 
@@ -43,9 +55,9 @@ def correct_sentence(model, tokenizer, device, sentences):
         return_tensors="pt",
         truncation=True,
         padding=True,
-        max_length=128,
+        max_length=512 - 32,
     ).input_ids.to(device)
-    outputs = model.generate(input_ids, max_length=128)
+    outputs = model.generate(input_ids, max_length=input_ids.shape[1] + 32)
     del input_ids
     corrected_sentences = tokenizer.batch_decode(outputs, skip_special_tokens=True)
     del outputs
@@ -54,16 +66,23 @@ def correct_sentence(model, tokenizer, device, sentences):
 
 def correct_all_sentences(model, tokenizer, device, sentence_df, batch_size):
     corrected_sentences = None
+    grouped_df = (
+        sentence_df.groupby("token_length").token_length.value_counts().reset_index()
+    )
 
-    for i in range(0, sentence_df.shape[0], batch_size):
-        start, end = i, i + batch_size
-        sentences = sentence_df["sentence"].iloc[start:end]
-        corrected = correct_sentence(model, tokenizer, device, sentences)
-        corrected = np.array(corrected).flatten()
+    for i, row in grouped_df.iterrows():
+        temp_df = sentence_df.loc[sentence_df["token_length"] == row["token_length"]]
 
-        if corrected_sentences is None:
-            corrected_sentences = corrected
-        else:
-            corrected_sentences = np.hstack([corrected_sentences, corrected]).flatten()
+        for i in range(0, temp_df.shape[0], batch_size):
+            start, end = i, min(i + batch_size, temp_df.shape[0])
+            sentences = temp_df["sentence"].iloc[start:end]
+            corrected = correct_sentence(model, tokenizer, device, sentences)
+            corrected = np.array(corrected).flatten()
+
+            if corrected_sentences is None:
+                corrected_sentences = corrected
+            else:
+                corrected_sentences = np.hstack([corrected_sentences, corrected])
+                corrected_sentences = corrected_sentences.flatten()
 
     return corrected_sentences
