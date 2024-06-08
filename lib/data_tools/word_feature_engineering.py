@@ -156,70 +156,110 @@ def process_for_mistakes(df: pd.DataFrame, drop: bool) -> pd.DataFrame:
     return df
 
 
-# TODO: Find a way to implement without library usage
-# def process_for_difficult_words(df: pd.DataFrame, drop: bool) -> pd.DataFrame:
-#     """
-#     Credit to this repo by andrei-papou
-#     https://github.com/andrei-papou/textstat
-#     """
-#     df["word_difficult_percentage"] = (
-#         df["full_text"].map(textstat.difficult_words) / df["word_count"]
-#     )
+class WordDifficultyScorer:
+    def __init__(self):
+        self.syllable_dict = json.load(open(Paths.WORD_TO_SYL_JSON, "r"))
+        self.syllable_counter = json.load(open(Paths.SYL_TO_FREQ_JSON, "r"))
+        self.SCORES = {
+            "a": 1,
+            "b": 3,
+            "c": 3,
+            "d": 2,
+            "e": 1,
+            "f": 4,
+            "g": 2,
+            "h": 4,
+            "i": 1,
+            "j": 8,
+            "k": 5,
+            "l": 1,
+            "m": 3,
+            "n": 1,
+            "o": 1,
+            "p": 3,
+            "q": 10,
+            "r": 1,
+            "s": 1,
+            "t": 1,
+            "u": 1,
+            "v": 4,
+            "w": 4,
+            "x": 8,
+            "y": 4,
+            "z": 10,
+        }
 
-#     if drop:
-#         df.drop(columns=["full_text"], inplace=True)
+    def total_syllable_score(self, word):
+        """Assigns score based on number of syllables."""
+        return len(self.syllable_dict.get(word.lower(), []))
 
-#     return df
+    def unique_syllable_score(self, word):
+        """Assigns score based on number of unique syllables."""
+        return len(set(self.syllable_dict.get(word.lower(), [])))
+
+    def syllable_rarity_score(self, word):
+        """Assigns score based on syllable rarity. Lower value means rarer."""
+        total_score = 0
+
+        for syllable in self.syllable_dict.get(word.lower(), []):
+            count = self.syllable_counter.get(syllable, 0)
+
+            if count < 1000:
+                total_score += 1
+            elif count < 10000:
+                total_score += 5
+            else:
+                total_score += 25
+
+        return total_score
+
+    def consonent_score(self, word):
+        """Assigns difficulty score based on the number of consequent consonents."""
+        max_score = score = 0
+
+        for letter in word:
+            if letter in "aeiou":
+                score += 1
+                max_score = max(score, max_score)
+            else:
+                score = 0
+
+        return max_score
+
+    def scrabble_score(self, word):
+        """Assigns difficulty score based on how uncommon letters it contains."""
+        return sum(self.SCORES.get(letter.lower(), 0) for letter in word)
+
+    def __call__(self, df):
+        df["word_scrabble_scores"] = df["words"].map(
+            lambda x: np.sum([self.scrabble_score(y) for y in x])
+        )
+        df["word_consonent_score"] = df["words"].map(
+            lambda x: np.sum([self.consonent_score(y) for y in x])
+        )
+        df["word_syllable_score"] = df["words"].map(
+            lambda x: np.sum([self.total_syllable_score(y) for y in x])
+        )
+        df["word_unique_syllable_score"] = df["words"].map(
+            lambda x: np.sum([self.unique_syllable_score(y) for y in x])
+        )
+        df["word_syllable_rarity_score"] = df["words"].map(
+            lambda x: np.sum([self.syllable_rarity_score(y) for y in x])
+        )
+        return df
 
 
-def calculate_percentages(df, drop):
+def engineer_word_features(df: pd.DataFrame, drop=True) -> pd.DataFrame:
     df = process_word(df)
     df["word_count"] = df["words"].map(lambda x: len(x))
 
-    # df = process_for_difficult_words(df, drop)
     df = process_for_common_words(df, drop)
     df = process_for_rare_words(df, drop)
     # df = process_for_POS(df, drop)
     df = process_for_mistakes(df, drop)
+    df = WordDifficultyScorer()(df)
 
     if drop:
-        df.drop(columns=["words"], inplace=True)
+        df.drop(columns=["words", "full_text", "score", "word_count"], inplace=True)
 
     return df
-
-
-def engineer_word_features(df: pd.DataFrame, drop=True) -> pd.DataFrame:
-    df = calculate_percentages(df, drop)
-
-    broad_operations = ["mean", "max", "sum"]
-    feature_list = [
-        "word_common_percentage",
-        "word_rare_percentage",
-        # "word_noun_percentage",
-        # "word_verb_percentage",
-        # "word_pronoun_percentage",
-        # "word_adjective_percentage",
-        # "word_adverb_percentage",
-        # "word_determiner_percentage",
-        # "word_conjunction_percentage",
-        # "word_numerical_percentage",
-        "word_mistake_percentage",
-        # "word_difficult_percentage",
-    ]
-
-    feature_df = df.groupby("essay_id")[feature_list].agg(broad_operations)
-
-    feature_df = pd.concat(
-        [
-            feature_df,
-            df.groupby("essay_id")[feature_list]
-            .agg([lambda x: np.quantile(x, 0.25), lambda x: np.quantile(x, 0.75)])
-            .rename(columns={"<lambda_0>": "q1", "<lambda_1>": "q3"}),
-        ],
-        axis=1,
-    )
-
-    feature_df = feature_df.set_axis(feature_df.columns.map("_".join), axis=1)
-    feature_df.reset_index(inplace=True)
-
-    return feature_df

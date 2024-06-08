@@ -39,3 +39,6 @@ class Paths:
     TOKENIZER_PATH: str = os.path.join(
         MODEL_OUTPUT_PATH, f"tokenizer_v{config.tokenizer_version}"
     )
+
+    WORD_TO_SYL_JSON = "data/syllable.json"
+    SYL_TO_FREQ_JSON = "data/syllable_counter.json"
