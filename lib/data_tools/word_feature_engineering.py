@@ -37,17 +37,14 @@ all_words = (
 )
 common_words = get_word_list_from_file("english_most_common_5000.txt")
 rare_words = get_word_list_from_file("google-10000-english-no-swears.txt")
-contraction_dict = json.load(open(Paths.CONTRACTION_FILE_PATH, "r"))
-contraction_re = re.compile("(%s)" % "|".join(contraction_dict.keys()))
 
 
-def expand_contractions(text: str, c_re=contraction_re) -> str:
-    """Replaces contracted word/phrase with enlongated word/phrase."""
-
-    def replace(match):
-        return contraction_dict[match.group(0)]
-
-    return c_re.sub(replace, text)
+def calculate_stats(df, column):
+    df[f"{column}_sum"] = df[column].map(np.sum)
+    df[f"{column}_min"] = df[column].map(np.min)
+    df[f"{column}_mean"] = df[column].map(np.mean)
+    df[f"{column}_max"] = df[column].map(np.max)
+    return df
 
 
 def data_preprocessing(x: str) -> str:
@@ -65,94 +62,8 @@ def data_preprocessing(x: str) -> str:
 
 
 def process_word(df: pd.DataFrame) -> pd.DataFrame:
-    temp = df["full_text"].map(expand_contractions)
-    temp = temp.map(data_preprocessing)
+    temp = df["full_text"].map(data_preprocessing)
     df["words"] = temp.map(word_tokenize)
-    return df
-
-
-def process_for_common_words(df: pd.DataFrame, drop: bool) -> pd.DataFrame:
-    df["common"] = df["words"].map(lambda x: [y for y in x if y in common_words])
-    df["word_common_percentage"] = df["common"].map(lambda x: len(x)) / df["word_count"]
-
-    if drop:
-        df.drop(columns=["common"], inplace=True)
-
-    return df
-
-
-def process_for_rare_words(df: pd.DataFrame, drop: bool) -> pd.DataFrame:
-    df["rare"] = df["words"].map(lambda x: [y for y in x if y in rare_words])
-    df["word_rare_percentage"] = df["rare"].map(lambda x: len(x)) / df["word_count"]
-
-    if drop:
-        df.drop(columns=["rare"], inplace=True)
-
-    return df
-
-
-# Not worth it
-# def process_for_POS(df: pd.DataFrame, drop: bool) -> pd.DataFrame:
-#     """
-#     List from this repo:
-#     https://github.com/david47k/top-english-wordlists?tab=readme-ov-file
-#     """
-#     df["noun"] = df["words"].map(lambda x: [y for y in x if y in noun_words])
-#     df["verb"] = df["words"].map(lambda x: [y for y in x if y in verb_words])
-#     df["pronoun"] = df["words"].map(lambda x: [y for y in x if y in pronoun_words])
-#     df["adjective"] = df["words"].map(lambda x: [y for y in x if y in adj_words])
-#     df["adverb"] = df["words"].map(lambda x: [y for y in x if y in adv_words])
-#     df["determiner"] = df["words"].map(lambda x: [y for y in x if y in deter_words])
-#     df["conjunction"] = df["words"].map(lambda x: [y for y in x if y in conj_words])
-#     df["numerical"] = df["words"].map(lambda x: [y for y in x if y in numerical_words])
-
-#     df["word_noun_percentage"] = df["noun"].map(lambda x: len(x)) / df["word_count"]
-#     df["word_verb_percentage"] = df["verb"].map(lambda x: len(x)) / df["word_count"]
-#     df["word_pronoun_percentage"] = (
-#         df["pronoun"].map(lambda x: len(x)) / df["word_count"]
-#     )
-#     df["word_adjective_percentage"] = (
-#         df["adjective"].map(lambda x: len(x)) / df["word_count"]
-#     )
-#     df["word_adverb_percentage"] = df["adverb"].map(lambda x: len(x)) / df["word_count"]
-#     df["word_determiner_percentage"] = (
-#         df["determiner"].map(lambda x: len(x)) / df["word_count"]
-#     )
-#     df["word_conjunction_percentage"] = (
-#         df["conjunction"].map(lambda x: len(x)) / df["word_count"]
-#     )
-#     df["word_numerical_percentage"] = (
-#         df["numerical"].map(lambda x: len(x)) / df["word_count"]
-#     )
-
-#     if drop:
-#         df.drop(
-#             columns=[
-#                 "noun",
-#                 "verb",
-#                 "pronoun",
-#                 "adjective",
-#                 "adverb",
-#                 "determiner",
-#                 "conjunction",
-#                 "numerical",
-#             ],
-#             inplace=True,
-#         )
-
-#     return df
-
-
-def process_for_mistakes(df: pd.DataFrame, drop: bool) -> pd.DataFrame:
-    df["mistakes"] = df["words"].map(lambda x: set(x).difference(all_words))
-
-    df["word_mistake_percentage"] = (
-        df["mistakes"].map(lambda x: len(x)) / df["word_count"]
-    )
-
-    if drop:
-        df.drop(columns=["mistakes"], inplace=True)
-
     return df
 
 
@@ -231,35 +142,47 @@ class WordDifficultyScorer:
         return sum(self.SCORES.get(letter.lower(), 0) for letter in word)
 
     def __call__(self, df):
-        df["word_scrabble_scores"] = df["words"].map(
-            lambda x: np.sum([self.scrabble_score(y) for y in x])
+        df["word_scrabbleScores"] = df["words"].map(
+            lambda x: [self.scrabble_score(y) for y in x]
         )
-        df["word_consonent_score"] = df["words"].map(
-            lambda x: np.sum([self.consonent_score(y) for y in x])
+        df["word_consonentScores"] = df["words"].map(
+            lambda x: [self.consonent_score(y) for y in x]
         )
-        df["word_syllable_score"] = df["words"].map(
-            lambda x: np.sum([self.total_syllable_score(y) for y in x])
+        df["word_syllableScores"] = df["words"].map(
+            lambda x: [self.total_syllable_score(y) for y in x]
         )
-        df["word_unique_syllable_score"] = df["words"].map(
-            lambda x: np.sum([self.unique_syllable_score(y) for y in x])
+        df["word_uniqueSyllableScores"] = df["words"].map(
+            lambda x: [self.unique_syllable_score(y) for y in x]
         )
-        df["word_syllable_rarity_score"] = df["words"].map(
-            lambda x: np.sum([self.syllable_rarity_score(y) for y in x])
+        df["word_syllableRarityScores"] = df["words"].map(
+            lambda x: [self.syllable_rarity_score(y) for y in x]
         )
+
+        columns = [
+            "word_scrabbleScores",
+            "word_consonentScores",
+            "word_syllableScores",
+            "word_uniqueSyllableScores",
+            "word_syllableRarityScores",
+        ]
+
+        for column in columns:
+            df = calculate_stats(df, column)
+
+        df.drop(columns=columns, inplace=True)
+
         return df
 
 
-def engineer_word_features(df: pd.DataFrame, drop=True) -> pd.DataFrame:
+def engineer_word_features(df: pd.DataFrame) -> pd.DataFrame:
     df = process_word(df)
     df["word_count"] = df["words"].map(lambda x: len(x))
+    df["word_variety"] = df["words"].map(
+        lambda x: len(set(y for y in x if y in all_words))
+    )
 
-    df = process_for_common_words(df, drop)
-    df = process_for_rare_words(df, drop)
-    # df = process_for_POS(df, drop)
-    df = process_for_mistakes(df, drop)
     df = WordDifficultyScorer()(df)
 
-    if drop:
-        df.drop(columns=["words", "full_text", "score", "word_count"], inplace=True)
+    df.drop(columns=["words", "full_text"], inplace=True)
 
     return df
