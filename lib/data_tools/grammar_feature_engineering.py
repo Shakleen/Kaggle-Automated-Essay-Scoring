@@ -2,21 +2,18 @@ import numpy as np
 import pandas as pd
 import ctypes
 
-broad_operations = ["max", "sum", "min", "median"]
+from lib.paths import Paths
+
+broad_operations = ["max", "sum", "min", "mean"]
 
 
 def levenshtein_distance(str1, str2):
-    levenshtein = ctypes.CDLL("./lib/c_lib_compiled/levenshtein_distance.so")
+    levenshtein = ctypes.CDLL(Paths.LEVENSHTEIN_SO_PATH)
     return levenshtein.levenshtein_distance(str1.encode(), str2.encode())
 
 
 def engineer_grammar_feature(df: pd.DataFrame) -> pd.DataFrame:
-    feature_list = [
-        "grammar_levenshtein_distance",
-        "grammar_jaccard_distance",
-        "grammar_hamming_distance",
-        "grammar_cosine_distance",
-    ]
+    feature_list = ["grammar_levenshtein_distance"]
 
     df.loc[df.corrected.isna(), "corrected"] = df.loc[df.corrected.isna(), "sentence"]
 

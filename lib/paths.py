@@ -42,3 +42,6 @@ class Paths:
 
     WORD_TO_SYL_JSON = "data/syllable.json"
     SYL_TO_FREQ_JSON = "data/syllable_counter.json"
+
+    # C DLLs
+    LEVENSHTEIN_SO_PATH = "./lib/c_lib_compiled/levenshtein_distance.so"
