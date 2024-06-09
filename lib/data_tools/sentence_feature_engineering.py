@@ -1,4 +1,6 @@
 import numpy as np
+import json
+import re
 from nltk import sent_tokenize, word_tokenize
 
 from .feature_engineering import data_preprocessing
@@ -13,6 +15,7 @@ from .word_feature_engineering import (
     numerical_words,
     all_words,
 )
+from lib.paths import Paths
 
 complex_words = set(
     [
@@ -32,11 +35,14 @@ complex_words = set(
     ]
 )
 compound_words = set(["and", "or", "but"])
+contraction_dict = json.load(open(Paths.CONTRACTION_FILE_PATH, "r"))
+contraction_re = re.compile("(%s)" % "|".join(contraction_dict.keys()))
 
 
 def calculate_stats(df, column):
+    df[f"{column}_sum"] = df[column].map(np.sum)
     df[f"{column}_min"] = df[column].map(np.min)
-    df[f"{column}_median"] = df[column].map(np.median)
+    df[f"{column}_mean"] = df[column].map(np.mean)
     df[f"{column}_max"] = df[column].map(np.max)
     return df
 
@@ -211,6 +217,15 @@ def calculate_sentence_structure_ratios(df):
     return df
 
 
+def calculate_contractions_per_sentence(df):
+    df["contractions_per_sentence"] = df["sentences"].map(
+        lambda x: [len(re.findall(contraction_re, sentence)) for sentence in x]
+    )
+    df = calculate_stats(df, "contractions_per_sentence")
+    df.drop(columns=["contractions_per_sentence"], inplace=True)
+    return df
+
+
 def engineer_sentence_features(df):
     df = prepare_df(df)
 
@@ -218,6 +233,7 @@ def engineer_sentence_features(df):
     df = calculate_pos_count_per_sentence(df)
     df = calculate_punctuations_per_sentence(df)
     df = calculate_sentence_structure_ratios(df)
+    df = calculate_contractions_per_sentence(df)
 
     df.drop(columns=["sentences", "sentence_words"], inplace=True)
     return df
