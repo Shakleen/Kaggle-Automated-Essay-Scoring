@@ -1,12 +1,10 @@
 import spacy
 import re
-import json
 import string
 import pandas as pd
 import numpy as np
 from nltk import sent_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-from scipy.stats import kurtosis
 
 from lib.paths import Paths
 
