@@ -22,17 +22,6 @@ def engineer_grammar_feature(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     feature_df = df.groupby("essay_id")[feature_list].agg(broad_operations)
-
-    feature_df = pd.concat(
-        [
-            feature_df,
-            df.groupby("essay_id")[feature_list]
-            .agg([lambda x: np.quantile(x, 0.25), lambda x: np.quantile(x, 0.75)])
-            .rename(columns={"<lambda_0>": "q1", "<lambda_1>": "q3"}),
-        ],
-        axis=1,
-    )
-
     feature_df = feature_df.set_axis(feature_df.columns.map("_".join), axis=1)
     feature_df.reset_index(inplace=True)
 

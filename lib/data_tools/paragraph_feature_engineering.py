@@ -57,4 +57,6 @@ def engineer_paragraph_features(df: pd.DataFrame) -> pd.DataFrame:
     df = calculate_paragraph_lengths(df)
     df = calculate_three_part_lengths(df)
 
+    df.drop(columns=["paragraphs"], inplace=True)
+
     return df

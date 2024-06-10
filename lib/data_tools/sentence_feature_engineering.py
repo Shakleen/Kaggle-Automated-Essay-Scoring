@@ -86,14 +86,14 @@ def calculate_pos_count_per_sentence(df):
         return [sum([word in type for word in sentence]) for sentence in sentences]
 
     type_dict = {
-        "Noun": noun_words,
-        "Pronoun": pronoun_words,
-        "Verb": verb_words,
-        "Determiner": deter_words,
-        "Adjective": adj_words,
-        "Adverb": adv_words,
-        "Numerical": numerical_words,
-        "Conjunction": conj_words,
+        "noun": noun_words,
+        "pronoun": pronoun_words,
+        "verb": verb_words,
+        "determiner": deter_words,
+        "adjective": adj_words,
+        "adverb": adv_words,
+        "numerical": numerical_words,
+        "conjunction": conj_words,
     }
 
     for key, val in type_dict.items():
