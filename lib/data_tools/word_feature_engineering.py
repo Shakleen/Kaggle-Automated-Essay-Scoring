@@ -3,9 +3,9 @@ import os
 import pandas as pd
 import json
 from nltk.tokenize import word_tokenize
-import numpy as np
 
 from lib.paths import Paths
+from .utils import calculate_stats
 
 
 def get_word_list_from_file(file_name):
@@ -37,14 +37,6 @@ all_words = (
 )
 common_words = get_word_list_from_file("english_most_common_5000.txt")
 rare_words = get_word_list_from_file("google-10000-english-no-swears.txt")
-
-
-def calculate_stats(df, column):
-    df[f"{column}_sum"] = df[column].map(np.sum)
-    df[f"{column}_min"] = df[column].map(np.min)
-    df[f"{column}_mean"] = df[column].map(np.mean)
-    df[f"{column}_max"] = df[column].map(np.max)
-    return df
 
 
 def data_preprocessing(x: str) -> str:

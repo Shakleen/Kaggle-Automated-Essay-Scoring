@@ -3,7 +3,7 @@ import json
 import re
 from nltk import sent_tokenize, word_tokenize
 
-from .feature_engineering import data_preprocessing
+from .utils import data_preprocessing, calculate_stats
 from .word_feature_engineering import (
     noun_words,
     verb_words,
@@ -37,14 +37,6 @@ complex_words = set(
 compound_words = set(["and", "or", "but"])
 contraction_dict = json.load(open(Paths.CONTRACTION_FILE_PATH, "r"))
 contraction_re = re.compile("(%s)" % "|".join(contraction_dict.keys()))
-
-
-def calculate_stats(df, column):
-    df[f"{column}_sum"] = df[column].map(np.sum)
-    df[f"{column}_min"] = df[column].map(np.min)
-    df[f"{column}_mean"] = df[column].map(np.mean)
-    df[f"{column}_max"] = df[column].map(np.max)
-    return df
 
 
 def split_sentences(df):
