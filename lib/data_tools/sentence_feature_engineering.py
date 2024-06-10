@@ -210,11 +210,11 @@ def calculate_sentence_structure_ratios(df):
 
 
 def calculate_contractions_per_sentence(df):
-    df["contractions_per_sentence"] = df["sentences"].map(
+    df["sentence_contractions"] = df["sentences"].map(
         lambda x: [len(re.findall(contraction_re, sentence)) for sentence in x]
     )
-    df = calculate_stats(df, "contractions_per_sentence")
-    df.drop(columns=["contractions_per_sentence"], inplace=True)
+    df = calculate_stats(df, "sentence_contractions")
+    df.drop(columns=["sentence_contractions"], inplace=True)
     return df
 
 
