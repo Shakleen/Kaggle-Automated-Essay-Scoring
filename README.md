@@ -2,6 +2,11 @@
 
 This repository contains code for the **Automated Essay Scoring 2.0** competition on Kaggle. In this competition, the task was to evaluate essays written by students on various topics and score them on a scale of 1 to 6, where 1 is the lowest and 6 is the highest score. The goal was to build a model that could automatically assign scores to the essays based on their content.
 
+![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)
+![Hugging Face](https://img.shields.io/badge/HuggingFace-transformers-orange)
+![Jupyter Notebook](https://img.shields.io/badge/Jupyter-Notebook-orange.svg)
+![Kaggle](https://img.shields.io/badge/Kaggle-Competition-blue.svg)
+
 ## Challenge Overview
 
 The main challenges in this competition were:
